@@ -1,5 +1,5 @@
 FactoryGirl.define do
-  factory :recommendation_document do
+  factory :r_document do
     recommendable { create :user }
   end
 end
