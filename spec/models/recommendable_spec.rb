@@ -51,6 +51,7 @@ RSpec.describe 'recommendable' do
         expect(target.tags.first.weight).to eq(10)
       end
     end
+
     describe 'assigning multiple tags at a time' do
       it 'should consider a hash of tags as tag_name/weight pairs' do
         target.tag_with( [{tag1:1}, {tag2:2}, {tag3:3}] )
@@ -62,30 +63,76 @@ RSpec.describe 'recommendable' do
         target.tag_with( [{tag1:10}, {tag2:20}, {tag3:30}] )
         expect(target.tags).to match([{tag1:10}, {tag2:20}, {tag3:30}])
       end
-
     end
   end
 
   describe '#recommend_to' do
     context 'when all article and user tags have weight 1' do
-      it 'orders the results by the number of common tags'
+        let(:target1) { FactoryGirl.create(:article) }
+        let(:target2) { FactoryGirl.create(:article) }
+        let(:target3) { FactoryGirl.create(:article) }
+        let(:user) { FactoryGirl.create(:user) }
+      it 'orders the results by the number of common tags' do
+        target1.tag_with(:tag1)
+        target2.tag_with(:tag1)
+        target2.tag_with(:tag2)
+        user.tag_with(:tag1)
+        user.tag_with(:tag2)
+        expect(Articles.recommend_to(user, :common)).to eq([target2, target1])
+      end
     end
 
     context 'when all article tags have weight 1' do
-      it 'orders the results by the sum of user\'s relevant tag weights'
+      it 'orders the results by the sum of user\'s relevant tag weights' do
+        target1.tag_with(:tag1)
+        target2.tag_with(:tag2)
+        target3.tag_with(:tag3)
+        user.tag_with(tag1:2)
+        user.tag_with(tag2:5)
+        user.tag_with(tag3:9)
+        expect(Articles.recommend_to(user, :relevance)).to eq([target3, target2, target1])
+      end
     end
 
     context 'when all user tags have weight 1' do
-      it 'orders the results by the sum of articles\'s relevant tag weights'
+      it 'orders the results by the sum of articles\'s relevant tag weights' do
+        user.tag_with(:tag1)
+        user.tag_with(:tag2)
+        user.tag_with(:tag3)
+        target1.tag_with(tag1:4)
+        target2.tag_with(tag2:6)
+        target3.tag_with(tag3:8)
+        expect(Articles.recommend_to(user, :relevance)).to eq([target3, target2, target1])
+      end
     end
 
-    context 'when both have non-trivial tags' do
-      it 'does something else...'
+    context 'when both tags have weights >||< 1' do
+      it 'recommends based on both weights sum' do
+        user.tag_with(tag1: 2) #10
+        user.tag_with(tag2: 9) #8
+        user.tag_with(tag3: 7) #14
+
+        target1.tag_with(tag1: 8)
+        target2.tag_with(tag2: -1)
+        target3.tag_with(tag3: 7)
+        expect(Articles.recommend_to(user, :relevance)).to eq([target3, target1, target2])
+      end
       it 'should weight user tags more than article one\'s, I think?'
       it 'is better to see something somewhat relevant to a major interest that to see something very relevant to a minor interest, maybe?'
     end
 
-    it 'should consider the number of unrelated tags (negatively)?'
+    it 'should consider the number of unrelated tags (negatively)?' do
+      user.tag_with(tag1: 10)
+      user.tag_with(tag5: 10)
+      target1.tag_with(tag1: 10)
+      target1.tag_with(tag2: 8)
+      target1.tag_with(tag3: 5)
+      target1.tag_with(tag4: 10)
+      target2.tag_with(tag1: 10)
+      target2.tag_with(tag5: 10)
+
+      expect(Articles.recommend_to(user, :relevance)).to eq([target2, target1])
+    end
     it 'should consider popularity?'
 
     context 'with a defined timeliness_modifier' do
