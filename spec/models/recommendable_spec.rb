@@ -188,9 +188,9 @@ RSpec.describe 'recommendable' do
       end
 
       it 'updates tags' do
-        user.tag_with(tag1: 0)
+        user.tag_with(tag1: -1)
         user.vote_down(target)
-        expect(User.last.tags_hash).to include({'tag1' => -1})
+        expect(User.last.tags_hash).to include({'tag1' => -2})
       end
     end
 
@@ -228,6 +228,38 @@ RSpec.describe 'recommendable' do
       user.vote_down(target)
       user.vote_up(target)
       expect(RVote.last.weight).to eq(1)
+    end
+
+    describe 'the tag cache is correctly updated' do
+      it 'unvoting exactly undoes voting up' do
+        expect{
+          user.vote_up(target)
+          user.unvote(target)
+        }.to_not change { user.tags_hash }
+      end
+
+      it 'unvoting exactly undoes voting down' do
+        expect{
+          user.vote_down(target)
+          user.unvote(target)
+        }.to_not change { user.tags_hash }
+      end
+
+      it 'upvoting has the same result despite a previous vote' do
+        user2 = FactoryGirl.create :user
+        user.vote_up(target)
+        user2.vote_down(target)
+        user2.vote_up(target)
+        expect(user.tags_hash).to eq user2.tags_hash
+      end
+
+      it 'downvoting has the same result despite a previous vote' do
+        user2 = FactoryGirl.create :user
+        user.vote_down(target)
+        user2.vote_up(target)
+        user2.vote_down(target)
+        expect(user.tags_hash).to eq user2.tags_hash
+      end
     end
   end
 end
