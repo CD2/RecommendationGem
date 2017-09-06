@@ -1,8 +1,8 @@
 class RDocument < ApplicationRecord
   belongs_to :recommendable, polymorphic: true, inverse_of: :r_document
 
-  before_save :remove_zero_tags
   before_save :update_tags_cache
+  before_save :remove_zero_tags
 
   def self.all_tags
     pluck('DISTINCT jsonb_object_keys(tags_cache)')
@@ -27,17 +27,17 @@ class RDocument < ApplicationRecord
       return
     end
     if static_tags_changed?
-      static_tags_was.each do |tag, weight|
-        cache_change tag, static_tags[tag] - weight
+      (static_tags_was.keys | static_tags.keys).each do |tag|
+        cache_change tag, (static_tags[tag] || 0) - (static_tags_was[tag] || 0)
       end
     end
   end
 
   def recalculate_tags
     dynamic_tags = {}
-    sub_query = RDocument.select('t.key AS tag, SUM(t.value::numeric) AS weight').joins('JOIN jsonb_each_text(tags_cache) AS t ON TRUE').group('tag')
-    raw = sql_calculate("SELECT json_object(array_agg(tag)::text[], array_agg(weight)::text[]) FROM (#{new_table.to_sql}) result")
-    JSON.parse(raw).each { |k, v| dynamic_tags[k] = v.to_f }
+    # # this does not filter results right now, should use docs from 'votes'
+    # result = RDocument.select('t.key AS tag, SUM(t.value::numeric) AS weight').joins('JOIN jsonb_each_text(tags_cache) AS t ON TRUE').group('tag').raw
+    # result.each { |x| dynamic_tags[x['tag']] = x['weight'].to_f }
     static_tags.merge(dynamic_tags) { |k, v1, v2| v1 + v2 }
   end
 
