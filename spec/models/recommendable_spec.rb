@@ -144,7 +144,27 @@ RSpec.describe 'recommendable' do
     end
   end
 
-  describe 'VOTING' do
-    it 'should increment the tags_cache'
+  pending 'VOTING' do
+    let(:target) { FactoryGirl.create(:article) }
+    let(:user) { FactoryGirl.create(:user) }
+
+    before(:each) do
+      user.tag_with(tag1: 2)
+      target.tag_with(tag1: 1)
+      target.tag_with(tag2: 1)
+    end
+
+    it 'should create a new tag for the user' do
+      target.vote(user)
+      expect(user.r_document.static_tags['tag2']).not_to be_nil
+    end
+
+    it 'should increment the tags_cache' do
+      expect{target.vote(user)}.to change(user.r_document.static_tags['tag1'], :count).by(1)
+    end
+
+    it 'should decrement the tags_cache' do
+      expect{target.vote(user)}.to change(user.r_document.static_tags['tag1'], :count).by(-1)
+    end
   end
 end
