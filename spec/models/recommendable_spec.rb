@@ -133,14 +133,16 @@ RSpec.describe 'recommendable' do
 
       expect(Article.recommend_to(user)).to eq([target2, target1])
     end
-    it 'should consider popularity?'
+    pending 'should consider popularity?' do
 
-    context 'with a defined timeliness_modifier' do
-      it ''
-    end
+      context 'with a defined timelines_modifier' do
+        it 'adds more if item is newer/older' do
+        end
+      end
 
-    context 'with a defined location_modifier' do
-      it ''
+      context 'with a defined location_modifier' do
+        it ''
+      end
     end
   end
 
