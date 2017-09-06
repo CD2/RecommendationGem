@@ -1,5 +1,5 @@
 FactoryGirl.define do
   factory :article do
-    name 'Racecars - A Complete Guide'
+    name 'Race Cars - A Complete Guide'
   end
 end

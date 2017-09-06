@@ -68,3 +68,5 @@ class Person
 end
 
 Article.where.not(downvoted_by(person)).recommend_to Person.first
+
+Article.recommend_to(Person.first)

@@ -1,5 +1,5 @@
 require 'rails_helper'
 
 RSpec.describe RDocument, type: :model do
-  pending "add some examples to (or delete) #{__FILE__}"
+  it 'removes 0-weight tags on save'
 end
