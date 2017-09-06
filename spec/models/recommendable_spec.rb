@@ -42,7 +42,7 @@ RSpec.describe 'recommendable' do
       it '.tag should return array hash' do
         target.tag_with(:tag1)
         target.tag_with(:tag2)
-        expect(target.tags).to match( [{:name => 'tag1', :weight => 1}] )
+        expect(target.tags).to match( [{:name => 'tag1', :weight => 1}, {:name => 'tag2', :weight => 1}] )
       end
 
       it '.tag_hash should return tags_cache' do
@@ -152,7 +152,7 @@ RSpec.describe 'recommendable' do
     end
   end
 
-  it 'VOTING' do
+  describe 'VOTING' do
     let(:target) { FactoryGirl.create(:article) }
     let(:user) { FactoryGirl.create(:user) }
 
@@ -162,16 +162,17 @@ RSpec.describe 'recommendable' do
       target.tag_with(tag2: 1)
     end
 
-    describe 'vote up' do
-      expect(user.vote_up(target)).to change(RVote, :count).by(1)
+    it 'vote up' do
+      expect{ user.vote_up(target) }.to change(RVote, :count).by(1)
     end
 
-    describe 'vote down' do
-      expect(user.vote_down(target)).to change(RVote, :count).by(1)
+    it 'vote down' do
+      expect{ user.vote_down(target) }.to change(RVote, :count).by(1)
     end
 
-    describe 'unvote' do
-        expect(user.unvote(target)).to change(RVote, :count).by(1)
+    it 'unvote' do
+      user.vote_up(target)
+      expect{ user.unvote(target) }.to change(RVote, :count).by(-1)
     end
 
   end
