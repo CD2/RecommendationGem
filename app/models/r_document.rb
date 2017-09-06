@@ -34,12 +34,11 @@ class RDocument < ApplicationRecord
   end
 
   def recalculate_tags
-    # dynamic = votes.joins('INNER JOIN "r_documents" ON "r_documents"."recommendable_id" = "r_votes"."votable_id" AND "r_documents"."recommendable_type" = "r_votes"."votable_type"')
-    #
-    # 'jsonb_object_keys(r_documents.tags_cache)'
-    # byebug
-    dynamic = {}
-    static_tags.merge(dynamic) { |k, v1, v2| v1 + v2 }
+    dynamic_tags = {}
+    sub_query = RDocument.select('t.key AS tag, SUM(t.value::numeric) AS weight').joins('JOIN jsonb_each_text(tags_cache) AS t ON TRUE').group('tag')
+    raw = sql_calculate("SELECT json_object(array_agg(tag)::text[], array_agg(weight)::text[]) FROM (#{new_table.to_sql}) result")
+    JSON.parse(raw).each { |k, v| dynamic_tags[k] = v.to_f }
+    static_tags.merge(dynamic_tags) { |k, v1, v2| v1 + v2 }
   end
 
   def increment vote
