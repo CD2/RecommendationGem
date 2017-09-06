@@ -175,5 +175,16 @@ RSpec.describe 'recommendable' do
       expect{ user.unvote(target) }.to change(RVote, :count).by(-1)
     end
 
+    it 'vote up then down' do
+      user.vote_up(target)
+      user.vote_down(target)
+      expect(RVote.last.weight).to eq(-1)
+    end
+    it 'vote down then up' do
+      user.vote_down(target)
+      user.vote_up(target)
+      expect(RVote.last.weight).to eq(1)
+    end
+
   end
 end
