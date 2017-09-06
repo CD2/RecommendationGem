@@ -31,24 +31,30 @@ RSpec.describe 'recommendable' do
 
       it 'assign tag1 without weight' do
         target.tag_with(:tag1)
-        expect(target.r_document.static_tags['tag1']).to match(1)
+        expect(target.tags_hash['tag1']).to match(1)
       end
 
       it 'assign tag1 with weight' do
         target.tag_with(tag1: 10)
-        expect(target.r_document.static_tags['tag1']).to match(10)
+        expect(target.tags_hash['tag1']).to match(10)
       end
 
-      it '.tag should return hash' do
+      it '.tag should return array hash' do
         target.tag_with(:tag1)
         target.tag_with(:tag2)
-        expect(target.r_document.static_tags).to match( {'tag1' => 1, 'tag2' => 1} )
+        expect(target.tags).to match( [{:name => 'tag1', :weight => 1}] )
+      end
+
+      it '.tag_hash should return tags_cache' do
+        target.tag_with(:tag1)
+        target.tag_with(:tag2)
+        expect(target.tags_hash).to match( {'tag1' => 1, 'tag2' => 1} )
       end
 
       it 'when the tag already exists, it is not overwritten' do
         target.tag_with(tag1: 10)
         target.tag_with(:tag1)
-        expect(target.r_document.static_tags['tag1']).to eq(10)
+        expect(target.tags_hash['tag1']).to eq(10)
       end
     end
 
@@ -146,7 +152,7 @@ RSpec.describe 'recommendable' do
     end
   end
 
-  pending 'VOTING' do
+  it 'VOTING' do
     let(:target) { FactoryGirl.create(:article) }
     let(:user) { FactoryGirl.create(:user) }
 
@@ -156,17 +162,17 @@ RSpec.describe 'recommendable' do
       target.tag_with(tag2: 1)
     end
 
-    it 'should create a new tag for the user' do
-      target.vote(user)
-      expect(user.r_document.static_tags['tag2']).not_to be_nil
+    describe 'vote up' do
+      expect(user.vote_up(target)).to change(RVote, :count).by(1)
     end
 
-    it 'should increment the tags_cache' do
-      expect{target.vote(user)}.to change(user.r_document.static_tags['tag1'], :count).by(1)
+    describe 'vote down' do
+      expect(user.vote_down(target)).to change(RVote, :count).by(1)
     end
 
-    it 'should decrement the tags_cache' do
-      expect{target.vote(user)}.to change(user.r_document.static_tags['tag1'], :count).by(-1)
+    describe 'unvote' do
+        expect(user.unvote(target)).to change(RVote, :count).by(1)
     end
+
   end
 end
