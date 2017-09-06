@@ -157,22 +157,65 @@ RSpec.describe 'recommendable' do
     let(:user) { FactoryGirl.create(:user) }
 
     before(:each) do
-      user.tag_with(tag1: 2)
       target.tag_with(tag1: 1)
-      target.tag_with(tag2: 1)
     end
 
-    it 'vote up' do
-      expect{ user.vote_up(target) }.to change(RVote, :count).by(1)
+    describe 'upvoting' do
+      it 'vote up' do
+        expect{ user.vote_up(target) }.to change(RVote, :count).by(1)
+      end
+
+      it 'adds tags' do
+        user.vote_up(target)
+        expect(User.last.tags_hash).to include({'tag1' => 1})
+      end
+
+      it 'updates tags' do
+        user.tag_with(tag1: 1)
+        user.vote_up(target)
+        expect(User.last.tags_hash).to include({'tag1' => 2})
+      end
     end
 
-    it 'vote down' do
-      expect{ user.vote_down(target) }.to change(RVote, :count).by(1)
+    describe 'downvoting' do
+      it 'vote down' do
+        expect{ user.vote_down(target) }.to change(RVote, :count).by(1)
+      end
+
+      it 'adds tags' do
+        user.vote_down(target)
+        expect(User.last.tags_hash).to include({'tag1' => -1})
+      end
+
+      it 'updates tags' do
+        user.tag_with(tag1: 0)
+        user.vote_down(target)
+        expect(User.last.tags_hash).to include({'tag1' => -1})
+      end
     end
 
-    it 'unvote' do
-      user.vote_up(target)
-      expect{ user.unvote(target) }.to change(RVote, :count).by(-1)
+    describe 'unvoting' do
+      it 'unvote' do
+        user.tag_with(:tag1)
+        user.vote_up(target)
+        expect{ user.unvote(target) }.to change(RVote, :count).by(-1)
+      end
+
+      it 'updates tags vote_up' do
+        user.tag_with(tag1:5)
+        user.vote_up(target)
+        user.unvote(target)
+        user.vote_down(target)
+        expect(User.last.tags_hash).to include({'tag1' => 4})
+      end
+
+      it 'updates tags vote_down' do
+        user.tag_with(tag1:5)
+        user.vote_down(target)
+        user.unvote(target)
+        user.vote_up(target)
+        expect(User.last.tags_hash).to include({'tag1' => 6})
+      end
     end
 
     it 'vote up then down' do
@@ -180,11 +223,26 @@ RSpec.describe 'recommendable' do
       user.vote_down(target)
       expect(RVote.last.weight).to eq(-1)
     end
+
     it 'vote down then up' do
       user.vote_down(target)
       user.vote_up(target)
       expect(RVote.last.weight).to eq(1)
     end
+
+
+      it 'vote up' do
+        user.vote_up(target)
+      end
+
+      it 'vote down' do
+        user.vote_down(target)
+      end
+
+      it 'unvote' do
+        user.vote_up(target)
+        expect{ user.unvote(target) }.to change(RVote, :count).by(-1)
+      end
 
   end
 end
