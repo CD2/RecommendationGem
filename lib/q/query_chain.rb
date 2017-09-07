@@ -1,7 +1,7 @@
 require_dependency "#{File.dirname(__FILE__)}/core.rb"
 
 module Q
-  class ApplicationRecord
+  class Core
     delegate :table, :query_chain, to: :class
 
     def self.table

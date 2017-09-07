@@ -1,7 +1,7 @@
 require_dependency "#{Recommendation::Engine.root}/lib/q/query_chain.rb"
 
 module Recommendation
-  class ApplicationRecord < Q::ApplicationRecord
+  class ApplicationRecord < Q::Core
     self.abstract_class = true
 
     def self.expand_json field, opts  = {}

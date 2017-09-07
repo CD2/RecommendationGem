@@ -1,5 +1,5 @@
 module Recommendation
-  class Document < ApplicationRecord
+  class Document < ::Recommendation::ApplicationRecord
     belongs_to :recommendable, polymorphic: true, inverse_of: :recommendation_document
 
     before_save :update_tags_cache

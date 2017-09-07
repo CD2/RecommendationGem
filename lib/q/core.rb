@@ -5,7 +5,7 @@ module Q
     end.join('.')
   end
 
-  class ApplicationRecord < ActiveRecord::Base
+  class Core < ::ActiveRecord::Base
     self.abstract_class = true
 
     delegate :raw, :sql_execute, :sql_calculate, to: :class

@@ -1,5 +1,5 @@
 module Recommendation
-  class Vote < ApplicationRecord
+  class Vote < ::Recommendation::ApplicationRecord
     belongs_to :voter, polymorphic: true, inverse_of: :votes_as_voter
     belongs_to :votable, polymorphic: true, inverse_of: :votes_as_votable
 
