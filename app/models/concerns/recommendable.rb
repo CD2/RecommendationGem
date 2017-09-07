@@ -21,7 +21,7 @@ module Recommendable
     end
 
     def tags_hash
-      r_document.tags_cache
+      r_document.tags_cache.with_indifferent_access
     end
 
     def tags
@@ -30,19 +30,24 @@ module Recommendable
       end
     end
 
-    def r_score_for(subject)
-      # subject.tags_hash.each do |tag, weight|
-      #   tag.
-      # end
+    def recalculate_tags
+      r_document.recalculate_tags.map do |tag, weight|
+        { name: tag, weight: weight }
+      end
+    end
+
+    def recalculate_tags!
+      r_document.recalculate_tags
+      r_document.save!
+      tags
+    end
+
+    def recommendation_score_for(subject)
+      0
     end
 
     def self.recommend_to(subject)
-
-    end
-
-    # a multiplier for how much vote on this thing is worth
-    def self.vote_weight
-      1
+      all
     end
 
     def vote_up(votable)

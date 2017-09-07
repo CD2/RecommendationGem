@@ -205,7 +205,7 @@ RSpec.describe 'recommendable' do
         user.tag_with(tag1:5)
         user.vote_up(target)
         user.unvote(target)
-        expect(User.last.tags_hash).to include({'tag1' => 4})
+        expect(User.last.tags_hash).to include({'tag1' => 5})
       end
 
       it 'updates tags vote_down' do
