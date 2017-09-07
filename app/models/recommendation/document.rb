@@ -34,8 +34,8 @@ module Recommendation
           recommendable_id: :votable_id,
           recommendable_type: :votable_type
         }
-        where(Vote.voter_id => recommendable_id)
-        where(Vote.voter_type => recommendable_type)
+        where('voter_id = ?', recommendable_id)
+        where('voter_type = ?', recommendable_type)
         group(:tag)
         select('json.key AS tag')
         select("SUM(json.value::numeric * #{Vote.weight}) AS weight")

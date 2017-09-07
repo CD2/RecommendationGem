@@ -2,7 +2,7 @@ require_dependency "#{File.dirname(__FILE__)}/core.rb"
 
 module Q
   class Core
-    delegate :table, :query_chain, to: :class
+    delegate :table, to: :class
 
     def self.table
       TableMock.new(table_name)
@@ -10,6 +10,12 @@ module Q
 
     def self.query_chain(qlass = self, &block)
       chain = QueryChain.new(qlass)
+      chain.instance_exec &block if block_given?
+      chain._result
+    end
+
+    def query_chain(qlass = self.class, &block)
+      chain = QueryChain.new(qlass, self)
       chain.instance_exec &block if block_given?
       chain._result
     end
@@ -38,12 +44,15 @@ module Q
 
   class QueryChain
     @relation
+    @caller
 
-    def initialize(qlass)
+    def initialize(qlass, context = self)
       @relation = qlass.all
+      @caller = context
     end
 
     def method_missing(name, *args, &block)
+      return @caller.send(name, *args, &block) if @caller.respond_to? name
       @relation = @relation.send(name, *args, &block)
     end
 
@@ -80,7 +89,7 @@ module Q
       if options[:on]
         on = options[:on].map { |x|
           if x.is_a? Array
-            "#{Q.quote(table_name, x[0])} = #{Q.quote(target_name, x[1])}"
+            "#{Q.quote(@relation.table_name, x[0])} = #{Q.quote(target_name, x[1])}"
           else
             x.to_s
           end

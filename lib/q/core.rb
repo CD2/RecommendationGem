@@ -10,16 +10,16 @@ module Q
 
     delegate :raw, :sql_execute, :sql_calculate, to: :class
 
-    def sql_execute command
+    def self.sql_execute command
       connection.execute(command).to_a
     end
 
-    def sql_calculate command
+    def self.sql_calculate command
       sql_execute(command).first&.values&.first
     end
 
-    def raw
-      sql_execute to_sql
+    def self.raw
+      sql_execute all.to_sql
     end
   end
 end
