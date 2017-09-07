@@ -90,3 +90,49 @@ Migrating to CreateRecommendationVotes (20170907104651)
   [1m[36mRecommendation::Document Load (1.6ms)[0m  [1m[34mSELECT  "recommendation_documents".* FROM "recommendation_documents" LEFT JOIN recommendation_votes ON TRUE LIMIT $1[0m  [["LIMIT", 11]]
   [1m[36mRecommendation::Document Load (3.5ms)[0m  [1m[34mSELECT  "recommendation_documents".* FROM "recommendation_documents" LEFT JOIN recommendation_votes ON TRUE LIMIT $1[0m  [["LIMIT", 11]]
   [1m[36mRecommendation::Document Load (0.3ms)[0m  [1m[34mSELECT  "recommendation_documents".* FROM "recommendation_documents" ORDER BY "recommendation_documents"."id" ASC LIMIT $1[0m  [["LIMIT", 1]]
+  [1m[35m (1.9ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC[0m
+  [1m[35m (0.3ms)[0m  [1m[34mSELECT "ar_internal_metadata"."value" FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = $1[0m  [["key", "environment"]]
+  [1m[35m (0.7ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC[0m
+  [1m[35m (0.2ms)[0m  [1m[34mSELECT "ar_internal_metadata"."value" FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = $1[0m  [["key", "environment"]]
+  [1m[35m (0.6ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC[0m
+  [1m[35m (0.2ms)[0m  [1m[34mSELECT "ar_internal_metadata"."value" FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = $1[0m  [["key", "environment"]]
+  [1m[35m (161.9ms)[0m  [1m[35mDROP DATABASE IF EXISTS "dummy_development"[0m
+  [1m[35m (155.4ms)[0m  [1m[35mDROP DATABASE IF EXISTS "dummy_test"[0m
+  [1m[35m (329.0ms)[0m  [1m[35mCREATE DATABASE "dummy_development" ENCODING = 'unicode'[0m
+  [1m[35m (236.6ms)[0m  [1m[35mCREATE DATABASE "dummy_test" ENCODING = 'unicode'[0m
+  [1m[35m (4.1ms)[0m  [1m[35mCREATE TABLE "schema_migrations" ("version" character varying NOT NULL PRIMARY KEY)[0m
+  [1m[35m (2.4ms)[0m  [1m[35mCREATE TABLE "ar_internal_metadata" ("key" character varying NOT NULL PRIMARY KEY, "value" character varying, "created_at" timestamp NOT NULL, "updated_at" timestamp NOT NULL)[0m
+  [1m[35m (0.2ms)[0m  [1m[34mSELECT pg_try_advisory_lock(1721091371569202325)[0m
+  [1m[35m (0.5ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC[0m
+Migrating to CreateUsers (20170905145408)
+  [1m[35m (0.1ms)[0m  [1m[35mBEGIN[0m
+  [1m[35m (3.5ms)[0m  [1m[35mCREATE TABLE "users" ("id" bigserial primary key, "name" character varying, "created_at" timestamp NOT NULL, "updated_at" timestamp NOT NULL)[0m
+  [1m[35mSQL (0.4ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ($1) RETURNING "version"[0m  [["version", "20170905145408"]]
+  [1m[35m (0.4ms)[0m  [1m[35mCOMMIT[0m
+Migrating to CreateArticles (20170905145623)
+  [1m[35m (1.0ms)[0m  [1m[35mBEGIN[0m
+  [1m[35m (3.0ms)[0m  [1m[35mCREATE TABLE "articles" ("id" bigserial primary key, "name" character varying, "created_at" timestamp NOT NULL, "updated_at" timestamp NOT NULL)[0m
+  [1m[35mSQL (0.3ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ($1) RETURNING "version"[0m  [["version", "20170905145623"]]
+  [1m[35m (0.3ms)[0m  [1m[35mCOMMIT[0m
+Migrating to CreateRecommendationDocuments (20170907104650)
+  [1m[35m (0.3ms)[0m  [1m[35mBEGIN[0m
+  [1m[35m (4.2ms)[0m  [1m[35mCREATE TABLE "recommendation_documents" ("id" bigserial primary key, "recommendable_type" character varying, "recommendable_id" bigint, "static_tags" jsonb DEFAULT '{}' NOT NULL, "tags_cache" jsonb DEFAULT '{}' NOT NULL, "created_at" timestamp NOT NULL, "updated_at" timestamp NOT NULL)[0m
+  [1m[35m (0.7ms)[0m  [1m[35mCREATE UNIQUE INDEX  "index_recommendation_documents_on_recommendable" ON "recommendation_documents"  ("recommendable_id", "recommendable_type")[0m
+  [1m[35m (0.7ms)[0m  [1m[35mCREATE  INDEX  "index_recommendation_documents_on_static_tags" ON "recommendation_documents" USING gin ("static_tags")[0m
+  [1m[35m (0.5ms)[0m  [1m[35mCREATE  INDEX  "index_recommendation_documents_on_tags_cache" ON "recommendation_documents" USING gin ("tags_cache")[0m
+  [1m[35mSQL (0.2ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ($1) RETURNING "version"[0m  [["version", "20170907104650"]]
+  [1m[35m (0.4ms)[0m  [1m[35mCOMMIT[0m
+Migrating to CreateRecommendationVotes (20170907104651)
+  [1m[35m (0.3ms)[0m  [1m[35mBEGIN[0m
+  [1m[35m (3.0ms)[0m  [1m[35mCREATE TABLE "recommendation_votes" ("id" bigserial primary key, "voter_type" character varying, "voter_id" bigint, "votable_type" character varying, "votable_id" bigint, "weight" integer NOT NULL, "created_at" timestamp NOT NULL, "updated_at" timestamp NOT NULL)[0m
+  [1m[35m (0.7ms)[0m  [1m[35mCREATE  INDEX  "index_recommendation_votes_on_voter_type_and_voter_id" ON "recommendation_votes"  ("voter_type", "voter_id")[0m
+  [1m[35m (0.7ms)[0m  [1m[35mCREATE  INDEX  "index_recommendation_votes_on_votable_type_and_votable_id" ON "recommendation_votes"  ("votable_type", "votable_id")[0m
+  [1m[35m (0.9ms)[0m  [1m[35mCREATE UNIQUE INDEX  "one_vote_per_voter_per_votable" ON "recommendation_votes"  ("voter_id", "voter_type", "votable_id", "votable_type")[0m
+  [1m[35mSQL (0.2ms)[0m  [1m[32mINSERT INTO "schema_migrations" ("version") VALUES ($1) RETURNING "version"[0m  [["version", "20170907104651"]]
+  [1m[35m (0.4ms)[0m  [1m[35mCOMMIT[0m
+  [1m[36mActiveRecord::InternalMetadata Load (0.4ms)[0m  [1m[34mSELECT  "ar_internal_metadata".* FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = $1 LIMIT $2[0m  [["key", "environment"], ["LIMIT", 1]]
+  [1m[35m (1.3ms)[0m  [1m[35mBEGIN[0m
+  [1m[35mSQL (0.4ms)[0m  [1m[32mINSERT INTO "ar_internal_metadata" ("key", "value", "created_at", "updated_at") VALUES ($1, $2, $3, $4) RETURNING "key"[0m  [["key", "environment"], ["value", "development"], ["created_at", "2017-09-07 13:18:18.249150"], ["updated_at", "2017-09-07 13:18:18.249150"]]
+  [1m[35m (0.3ms)[0m  [1m[35mCOMMIT[0m
+  [1m[35m (0.2ms)[0m  [1m[34mSELECT pg_advisory_unlock(1721091371569202325)[0m
+  [1m[35m (0.2ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC[0m
