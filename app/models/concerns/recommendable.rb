@@ -2,12 +2,12 @@ module Recommendable
   extend ActiveSupport::Concern
 
   included do
-    has_one :r_document, as: :recommendable, inverse_of: :recommendable
-    has_many :r_votes_as_voter, as: :voter, inverse_of: :voter, class_name: 'RVote'
-    has_many :r_votes_as_votable, as: :votable, inverse_of: :voter, class_name: 'RVote'
+    has_one :recommendation_document, as: :recommendable, inverse_of: :recommendable, class_name: 'Recommendation::Document'
+    has_many :votes_as_voter, as: :voter, inverse_of: :voter, class_name: 'Recommendation::Vote'
+    has_many :votes_as_votable, as: :votable, inverse_of: :voter, class_name: 'Recommendation::Vote'
 
-    def r_document
-      super || create_r_document!
+    def recommendation_document
+      super || create_recommendation_document!
     end
 
     def tag_with(*args)
@@ -51,17 +51,23 @@ module Recommendable
     end
 
     def vote_up(votable)
-      vote = r_votes_as_voter.find_or_initialize_by(votable: votable)
+      vote = votes_as_voter.find_or_initialize_by(votable: votable)
       vote.update(weight: 1)
     end
 
     def vote_down(votable)
-      vote = r_votes_as_voter.find_or_initialize_by(votable: votable)
+      vote = votes_as_voter.find_or_initialize_by(votable: votable)
       vote.update(weight: -1)
     end
 
     def unvote(votable)
-      r_votes_as_voter.find_by(votable: votable)&.destroy
+      votes_as_voter.find_by(votable: votable)&.destroy
+    end
+
+    private
+
+    def r_document
+      recommendation_document
     end
   end
 end
