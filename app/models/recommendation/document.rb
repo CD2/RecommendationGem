@@ -65,6 +65,10 @@ module Recommendation
       save!
     end
 
+    def self.recommendation_score
+      'coalesce((SUM(subject_doc.value) + SUM(model_docs.value)), 0)'
+    end
+
     def self.recommend relation, subject
       qlass = relation.klass
 
@@ -91,7 +95,7 @@ module Recommendation
         )
         group(:recommendable_id)
         select(:recommendable_id)
-        select('coalesce((SUM(subject_doc.value) + SUM(model_docs.value)), 0) AS recommendation_score')
+        select("#{recommendation_score} AS recommendation_score")
         to_sql
       end
 

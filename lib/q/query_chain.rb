@@ -9,18 +9,30 @@ module Q
       chain._result
     end
 
-    delegate :query_chain, to: :class
+    # Replacing this with a delegation causes binding issues
+    def query_chain(qlass = self, &block)
+      chain = QueryChain.new(qlass)
+      chain.instance_exec &block if block_given?
+      chain._result
+    end
   end
 
   class QueryChain
-    @relation
-    @self
-
-    def initialize(qlass)
-      @relation = qlass.all
-      @self = binding.of_caller(0).receiver
+    # New classes get some methods by default
+    # This forces a method_missing while retaining their super
+    %i[select as_json].each do |name|
+      define_method name do |*args, &block|
+        method_missing name, *args, &block
+      end
     end
 
+    def initialize(relation)
+      @relation = relation.all
+      @self = binding.of_caller(1).receiver
+    end
+
+    # Got a method that exists on both @relation and @self?
+    # Manually call @self.your_method or @relation.your_method in the block
     def method_missing(name, *args, &block)
       if @relation.respond_to? name
         @relation = @relation.send(name, *args, &block)
@@ -29,10 +41,6 @@ module Q
       else
         super
       end
-    end
-
-    def select(*args, &block)
-      method_missing(:select, *args, &block)
     end
 
     def _result
