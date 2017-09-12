@@ -23,15 +23,15 @@ Recommendables may be given tags using 'tag_with' and 'remove_tag':
 ```ruby
 Article.first.tag_with(:sports, :football)
 Article.first.tags
-# => [{ "name" => "sports", "weight" => 1 }, { "name" => "football", "weight" => 1 }]
+# => [{"name" => "sports", "weight" => 1}, {"name" => "football", "weight" => 1}]
 
 User.first.tag_with(:football, sports: 5)
 User.first.tags
-# => [{ "name" => "football", "weight" => 1 }, { "name" => "sports", "weight" => 5 }]
+# => [{"name" => "football", "weight" => 1}, {"name" => "sports", "weight" => 5}]
 
 User.first.remove_tag(:sports)
 User.first.tags
-# => [{ "name" => "sports", "weight" => 1 }]
+# => [{"name" => "sports", "weight" => 1}]
 ```
 
 Recommendables may acquire tags dynamically through voting:
@@ -41,11 +41,11 @@ Article.first.tag_with(:sports)
 
 User.first.vote_up(Article.first)
 User.first.tags
-# => [{ "name" => "sports", "weight" => 1 }]
+# => [{"name" => "sports", "weight" => 1}]
 
 User.first.vote_down(Article.first)
 User.first.tags
-# => [{ "name" => "sports", "weight" => -1 }]
+# => [{"name" => "sports", "weight" => -1}]
 
 User.first.unvote(Article.first)
 User.first.tags
