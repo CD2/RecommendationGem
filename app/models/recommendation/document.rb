@@ -19,7 +19,7 @@ module Recommendation
     end
 
     def update_tags_cache
-      recalculate_tags if new_record?
+      return recalculate_tags if new_record?
       if static_tags_changed?
         (static_tags_was.keys | static_tags.keys).each do |tag|
           cache_change tag, (static_tags[tag] || 0) - (static_tags_was[tag] || 0)
@@ -102,7 +102,7 @@ module Recommendation
 
       relation
       .joins("LEFT JOIN (#{scores}) AS recommendation ON recommendable_id = id")
-      .order('recommendation_score DESC')
+      .order('coalesce(recommendation_score, 0) DESC')
     end
   end
 end
