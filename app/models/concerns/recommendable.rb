@@ -20,6 +20,13 @@ module Recommendable
       r_document.save
     end
 
+    def remove_tag(*args)
+      args.each do |tag|
+        r_document.static_tags[tag.to_s] = 0
+      end
+      r_document.save
+    end
+
     def tags_hash
       r_document.tags_cache.with_indifferent_access
     end

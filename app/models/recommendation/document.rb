@@ -19,6 +19,7 @@ module Recommendation
     end
 
     def update_tags_cache
+      recalculate_tags if new_record?
       if static_tags_changed?
         (static_tags_was.keys | static_tags.keys).each do |tag|
           cache_change tag, (static_tags[tag] || 0) - (static_tags_was[tag] || 0)
@@ -65,8 +66,8 @@ module Recommendation
       save!
     end
 
-    def self.recommendation_score
-      'coalesce((SUM(subject_doc.value) + SUM(model_docs.value)), 0)'
+    def self.r_score_formula
+      'coalesce((SUM(subject_doc.value * model_docs.value)), 0)'
     end
 
     def self.recommend relation, subject
@@ -79,9 +80,7 @@ module Recommendation
         to_sql
       end
 
-      model_docs = all
-      model_docs.where!('recommendable_id != ?', subject.id) if subject.is_a?(qlass)
-      model_docs = model_docs.query_chain do
+      model_docs = query_chain do
         where(recommendable_type: qlass.name)
         expand_json(:tags_cache)
         select(:recommendable_id, 'key', 'value::numeric')
@@ -95,9 +94,11 @@ module Recommendation
         )
         group(:recommendable_id)
         select(:recommendable_id)
-        select("#{recommendation_score} AS recommendation_score")
+        select("#{@self.r_score_formula} AS recommendation_score")
         to_sql
       end
+
+      relation = relation.where.not(id: subject.id) if subject.is_a?(qlass)
 
       relation
       .joins("LEFT JOIN (#{scores}) AS recommendation ON recommendable_id = id")
