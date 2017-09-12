@@ -64,5 +64,40 @@ module Recommendation
       end
       save!
     end
+
+    def self.recommend relation, subject
+      qlass = relation.klass
+
+      subject_doc = query_chain do
+        where(recommendable: subject)
+        expand_json(:tags_cache)
+        select('key', 'value::numeric')
+        to_sql
+      end
+
+      model_docs = all
+      model_docs.where!('recommendable_id != ?', subject.id) if subject.is_a?(qlass)
+      model_docs = model_docs.query_chain do
+        where(recommendable_type: qlass.name)
+        expand_json(:tags_cache)
+        select(:recommendable_id, 'key', 'value::numeric')
+      end
+
+      scores = query_chain do
+        from("(#{subject_doc}) AS subject_doc")
+        right_join(model_docs,
+          as: :model_docs,
+          on: ['subject_doc.key = model_docs.key']
+        )
+        group(:recommendable_id)
+        select(:recommendable_id)
+        select('coalesce((SUM(subject_doc.value) + SUM(model_docs.value)), 0) AS recommendation_score')
+        to_sql
+      end
+
+      relation
+      .joins("LEFT JOIN (#{scores}) AS recommendation ON recommendable_id = id")
+      .order('recommendation_score DESC')
+    end
   end
 end

@@ -47,7 +47,7 @@ module Recommendable
     end
 
     def self.recommend_to(subject)
-      all
+      Recommendation::Document.recommend(all, subject)
     end
 
     def vote_up(votable)

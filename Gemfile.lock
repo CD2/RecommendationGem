@@ -2,6 +2,8 @@ PATH
   remote: .
   specs:
     recommendation (0.1.0)
+      binding_of_caller
+      pg
       rails (~> 5.1.3)
 
 GEM
@@ -45,10 +47,13 @@ GEM
       minitest (~> 5.1)
       tzinfo (~> 1.1)
     arel (8.0.0)
+    binding_of_caller (0.7.2)
+      debug_inspector (>= 0.0.1)
     builder (3.2.3)
     byebug (9.1.0)
     concurrent-ruby (1.0.5)
     database_cleaner (1.6.1)
+    debug_inspector (0.0.3)
     diff-lcs (1.3)
     erubi (1.6.1)
     factory_girl (4.8.0)
@@ -158,7 +163,6 @@ DEPENDENCIES
   database_cleaner
   factory_girl_rails
   listen (>= 3.0.5, < 3.2)
-  pg
   recommendation!
   rspec
   rspec-rails
