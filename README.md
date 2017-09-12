@@ -5,7 +5,7 @@ Gem for tags, votes and recommendations.
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'recommendation', github: 'CD2/recommendation-gem'
+gem 'recommendation', git: 'https://github.com/CD2/recommendation-gem'
 ```
 
 And then execute:
