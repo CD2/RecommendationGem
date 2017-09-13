@@ -94,7 +94,7 @@ module Recommendation
         select(:recommendable_id, 'key', 'value::numeric')
       end
 
-      scores = query_chain do
+      query_chain do
         from("(#{subject_doc}) AS subject_doc")
         right_join(model_docs,
           as: :model_docs,
@@ -102,15 +102,9 @@ module Recommendation
         )
         group(:recommendable_id)
         select(:recommendable_id)
-        select("#{@self.r_score_formula} AS recommendation_score")
+        select("#{@self.r_score_formula} AS score")
         to_sql
       end
-
-      relation = relation.where.not(id: subject.id) if subject.is_a?(qlass)
-
-      relation
-      .joins("LEFT JOIN (#{scores}) AS recommendation ON recommendable_id = id")
-      .order('coalesce(recommendation_score, 0) DESC')
     end
   end
 end

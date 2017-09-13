@@ -13,11 +13,7 @@ module Recommendation
     after_destroy :update_tags_cache
 
     def voter_document
-      Document.find_or_create_by(recommendable_id: voter_id, recommendable_type: voter_type)
-    end
-
-    def votable_document
-      Document.find_or_create_by(recommendable_id: votable_id, recommendable_type: votable_type)
+      Document.find_or_initialize_by(recommendable_id: voter_id, recommendable_type: voter_type)
     end
 
     def update_tags_cache
