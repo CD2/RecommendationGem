@@ -10,10 +10,10 @@ module Recommendable
       super || create_recommendation_document!
     end
 
-    def self.tagged_with(tag_name)
+    def self.tagged_with(*tag_names)
       docs = Recommendation::Document
       .where(recommendable_type: name)
-      .tagged_with(tag_name)
+      .tagged_with(*tag_names)
       .select(:recommendable_id)
       where(id: docs)
     end

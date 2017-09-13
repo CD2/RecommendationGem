@@ -9,11 +9,13 @@ module Recommendation
       pluck('DISTINCT jsonb_object_keys(tags_cache)')
     end
 
-    def self.tagged_with tag_name
+    def self.tagged_with *tag_names
+      tag_names.map! { |x| normalize(x) }
       query_chain do
         expand_json(:tags_cache)
-        where('value::numeric > 0 AND key = ?', @self.normalize(tag_name))
+        where('value::numeric > 0 AND key IN (?)', tag_names)
         group(:id)
+        having('COUNT(key) = ?', tag_names.count)
       end
     end
 

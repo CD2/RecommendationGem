@@ -7,8 +7,8 @@ module Recommendation
     Document.all_tags
   end
 
-  def self.tagged_with tag_name
-    Document.tagged_with(tag_name)
+  def self.tagged_with *tag_names
+    Document.tagged_with(*tag_names)
   end
 
   class ApplicationRecord < Q::Core
