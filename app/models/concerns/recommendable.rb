@@ -78,34 +78,43 @@ module Recommendable
 
   def tag_with(*args)
     args.extract_options!.each do |tag, weight|
-      r_document.static_tags[Recommendation::Document.normalize(tag)] = weight
+      recommendation_document.static_tags[Recommendation::Document.normalize(tag)] = weight
     end
     args.each do |tags|
-      Array.wrap(tags).each { |tag| r_document.static_tags[Recommendation::Document.normalize(tag)] ||= 1 }
+      Array.wrap(tags).each do |tag|
+        recommendation_document.static_tags[Recommendation::Document.normalize(tag)] ||= 1
+      end
     end
-    r_document.save
+    recommendation_document.save
   end
 
   def remove_tag(*args)
     args.each do |tag|
-      r_document.static_tags[Recommendation::Document.normalize(tag)] = 0
+      recommendation_document.static_tags[Recommendation::Document.normalize(tag)] = 0
     end
-    r_document.save
-  end
-
-  def tags_hash
-    r_document.tags_cache.with_indifferent_access
+    recommendation_document.save
   end
 
   def tags
-    tags_hash.map do |tag, weight|
-      { name: tag, weight: weight }
-    end
+    tags_hash.map { |tag, weight| { name: tag, weight: weight } }
+  end
+
+  def tags_hash
+    recommendation_document.tags_cache.with_indifferent_access
+  end
+
+  def static_tags_hash
+    recommendation_document.static_tags.with_indifferent_access
+  end
+
+  def dynamic_tags_hash
+    result = tags_hash.merge(static_tags_hash) { |k, v1, v2| v1 - v2 }
+    result.reject { |k, v| v.zero? }.to_h.with_indifferent_access
   end
 
   def recalculate_tags!
-    r_document.recalculate_tags
-    r_document.save!
+    recommendation_document.recalculate_tags
+    recommendation_document.save!
     tags
   end
 
@@ -137,11 +146,5 @@ module Recommendable
 
   def popularity_score(force = false)
     !force && attributes['popularity_score'] || votes_as_votable.pluck(:weight).sum
-  end
-
-  private
-
-  def r_document
-    recommendation_document
   end
 end

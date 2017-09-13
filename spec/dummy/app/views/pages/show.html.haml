@@ -1,0 +1,63 @@
+%h1 Recommendation Debug
+%h2
+  = link_to 'Root', '/'
+  = '>'
+  = link_to @model.name, "/#{@model.name.underscore.pluralize}/"
+  = '>'
+  = @record.id
+%i= @record.inspect
+%h3 Tags:
+%table
+  %tr
+    %th Name
+    %th Weight (from static modifiers)
+    %th Weight (from dynamic voting)
+    %th Weight (total)
+  - @record.tags_hash.each do |tag, weight|
+    %tr
+      %td= tag
+      %td= @record.static_tags_hash[tag] || 0
+      %td= @record.dynamic_tags_hash[tag] || 0
+      %td= weight
+%br
+= button_to 'Recalculate Tags', "/#{@model.name.underscore.pluralize}/#{@record.id}/recalculate"
+%h3 Votes as voter:
+%table
+  %tr
+    %th Score
+    %th Record
+    %th Tags
+  - @record.votes_as_voter.order(weight: :desc).each do |vote|
+    %tr
+      %td= vote.weight
+      %td
+        %i= vote.voter.inspect
+      %td= vote.votable.tags_hash
+%h3 Votes as votable:
+%table
+  %tr
+    %th Score
+    %th Record
+  - @record.votes_as_votable.order(weight: :desc).each do |vote|
+    %tr
+      %td= vote.weight
+      %td
+        %i= vote.voter.inspect
+%h3 Recommendations:
+- @models.each do |model|
+  %b= model.name
+  %br
+  %br
+  %table
+    %tr
+      %th Score
+      %th Record
+      %th Tags
+    - model.recommend_to(@record, include_score: true).limit(5).each do |record|
+      %tr
+        %td= record.recommendation_score
+        %td
+          %i= link_to record.inspect, "/#{record.class.name.underscore.pluralize}/#{record.id}"
+        %td= record.tags_hash
+  %br
+  %br
