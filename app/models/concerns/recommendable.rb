@@ -4,7 +4,7 @@ module Recommendable
   included do
     has_one :recommendation_document, as: :recommendable, inverse_of: :recommendable, class_name: 'Recommendation::Document'
     has_many :votes_as_voter, as: :voter, inverse_of: :voter, class_name: 'Recommendation::Vote'
-    has_many :votes_as_votable, as: :votable, inverse_of: :voter, class_name: 'Recommendation::Vote'
+    has_many :votes_as_votable, as: :votable, inverse_of: :votable, class_name: 'Recommendation::Vote'
 
     def recommendation_document
       super || create_recommendation_document!
