@@ -10,19 +10,31 @@ module Recommendable
       super || create_recommendation_document!
     end
 
+    def self.tagged_with(tag_name)
+      docs = Recommendation::Document
+      .where(recommendable_type: name)
+      .tagged_with(tag_name)
+      .select(:recommendable_id)
+      where(id: docs)
+    end
+
+    def self.all_tags
+      Recommendation::Document.where(recommendable_type: name).all_tags
+    end
+
     def tag_with(*args)
       args.extract_options!.each do |tag, weight|
-        r_document.static_tags[tag.to_s] = weight
+        r_document.static_tags[normalize(tag)] = weight
       end
       args.each do |tags|
-        Array.wrap(tags).each { |tag| r_document.static_tags[tag.to_s] ||= 1 }
+        Array.wrap(tags).each { |tag| r_document.static_tags[normalize(tag)] ||= 1 }
       end
       r_document.save
     end
 
     def remove_tag(*args)
       args.each do |tag|
-        r_document.static_tags[tag.to_s] = 0
+        r_document.static_tags[normalize(tag)] = 0
       end
       r_document.save
     end
@@ -50,7 +62,8 @@ module Recommendable
     end
 
     def recommendation_score_for(subject)
-      0
+      subject.class.where(id: subject.id)
+      .recommend_to(self).pluck(:recommendation_score).first
     end
 
     def self.recommend_to(subject)

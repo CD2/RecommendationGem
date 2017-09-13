@@ -9,6 +9,14 @@ module Recommendation
       pluck('DISTINCT jsonb_object_keys(tags_cache)')
     end
 
+    def self.tagged_with tag_name
+      query_chain do
+        expand_json(:tags_cache)
+        where('value::numeric > 0 AND key = ?', @self.normalize(tag_name))
+        group(:id)
+      end
+    end
+
     def cache_change(tag, change)
       tags_cache[tag] = (tags_cache[tag] || 0) + change
     end
