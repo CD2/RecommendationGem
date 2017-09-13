@@ -6,10 +6,6 @@ module Recommendable
     has_many :votes_as_voter, as: :voter, inverse_of: :voter, class_name: 'Recommendation::Vote'
     has_many :votes_as_votable, as: :votable, inverse_of: :votable, class_name: 'Recommendation::Vote'
 
-    def recommendation_document
-      super || create_recommendation_document!
-    end
-
     def self.tagged_with(*tag_names)
       docs = Recommendation::Document
       .where(recommendable_type: name)
@@ -20,44 +16,6 @@ module Recommendable
 
     def self.all_tags
       Recommendation::Document.where(recommendable_type: name).all_tags
-    end
-
-    def tag_with(*args)
-      args.extract_options!.each do |tag, weight|
-        r_document.static_tags[Recommendation::Document.normalize(tag)] = weight
-      end
-      args.each do |tags|
-        Array.wrap(tags).each { |tag| r_document.static_tags[Recommendation::Document.normalize(tag)] ||= 1 }
-      end
-      r_document.save
-    end
-
-    def remove_tag(*args)
-      args.each do |tag|
-        r_document.static_tags[Recommendation::Document.normalize(tag)] = 0
-      end
-      r_document.save
-    end
-
-    def tags_hash
-      r_document.tags_cache.with_indifferent_access
-    end
-
-    def tags
-      tags_hash.map do |tag, weight|
-        { name: tag, weight: weight }
-      end
-    end
-
-    def recalculate_tags!
-      r_document.recalculate_tags
-      r_document.save!
-      tags
-    end
-
-    def recommendation_score_for(subject)
-      subject.class.where(id: subject.id)
-      .recommend_to(self).pluck(:recommendation_score).first
     end
 
     def self.recommend_to(subject, opts = {})
@@ -87,27 +45,6 @@ module Recommendable
       result.joins("LEFT JOIN (#{scores}) AS recommendation ON recommendation.recommendable_id = #{table_name}.id")
     end
 
-    def vote_up(votable)
-      vote = votes_as_voter.find_or_initialize_by(votable: votable)
-      return false unless vote.update(weight: 1)
-      association(:recommendation_document).reset
-      true
-    end
-
-    def vote_down(votable)
-      vote = votes_as_voter.find_or_initialize_by(votable: votable)
-      return false unless vote.update(weight: -1)
-      association(:recommendation_document).reset
-      true
-    end
-
-    def unvote(votable)
-      vote = votes_as_voter.find_by(votable: votable)
-      return false unless vote&.destroy
-      association(:recommendation_document).reset
-      true
-    end
-
     def self.by_popularity(opts = {})
       options = opts.to_options
       options.assert_valid_keys(:include_score, :order)
@@ -133,15 +70,78 @@ module Recommendable
 
       result.joins("LEFT JOIN (#{scores}) AS popularity ON popularity.id = #{table_name}.id")
     end
+  end
 
-    def popularity_score(force = false)
-      !force && attributes['popularity_score'] || votes_as_votable.pluck(:weight).sum
+  def recommendation_document
+    super || create_recommendation_document!
+  end
+
+  def tag_with(*args)
+    args.extract_options!.each do |tag, weight|
+      r_document.static_tags[Recommendation::Document.normalize(tag)] = weight
     end
-
-    private
-
-    def r_document
-      recommendation_document
+    args.each do |tags|
+      Array.wrap(tags).each { |tag| r_document.static_tags[Recommendation::Document.normalize(tag)] ||= 1 }
     end
+    r_document.save
+  end
+
+  def remove_tag(*args)
+    args.each do |tag|
+      r_document.static_tags[Recommendation::Document.normalize(tag)] = 0
+    end
+    r_document.save
+  end
+
+  def tags_hash
+    r_document.tags_cache.with_indifferent_access
+  end
+
+  def tags
+    tags_hash.map do |tag, weight|
+      { name: tag, weight: weight }
+    end
+  end
+
+  def recalculate_tags!
+    r_document.recalculate_tags
+    r_document.save!
+    tags
+  end
+
+  def recommendation_score_for(subject)
+    subject.class.where(id: subject.id)
+    .recommend_to(self).pluck(:recommendation_score).first
+  end
+
+  def vote_up(votable)
+    vote = votes_as_voter.find_or_initialize_by(votable: votable)
+    return false unless vote.update(weight: 1)
+    association(:recommendation_document).reset
+    true
+  end
+
+  def vote_down(votable)
+    vote = votes_as_voter.find_or_initialize_by(votable: votable)
+    return false unless vote.update(weight: -1)
+    association(:recommendation_document).reset
+    true
+  end
+
+  def unvote(votable)
+    vote = votes_as_voter.find_by(votable: votable)
+    return false unless vote&.destroy
+    association(:recommendation_document).reset
+    true
+  end
+
+  def popularity_score(force = false)
+    !force && attributes['popularity_score'] || votes_as_votable.pluck(:weight).sum
+  end
+
+  private
+
+  def r_document
+    recommendation_document
   end
 end
