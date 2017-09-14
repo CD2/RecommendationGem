@@ -5,11 +5,11 @@ require_dependency "#{Recommendation::Engine.root}/lib/q/simple_count.rb"
 
 module Recommendation
   def self.all_tags
-    Document.all_tags
+    ::Recommendation::Document.all_tags
   end
 
   def self.tagged_with *tag_names
-    Document.tagged_with(*tag_names)
+    ::Recommendation::Document.tagged_with(*tag_names)
   end
 
   class ApplicationRecord < Q::Core
