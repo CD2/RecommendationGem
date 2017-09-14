@@ -47,11 +47,11 @@ module Recommendation
     end
 
     def parse_model(input)
-      input.singularize.camelcase
+      input.singularize.split('::').map(&:camelcase).join('::')
     end
 
     def unparse_model(input)
-      input.name.underscore.pluralize
+      input.name.split('::').map(&:underscore).join('::').pluralize
     end
 
     private
