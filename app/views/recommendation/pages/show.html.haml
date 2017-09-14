@@ -23,7 +23,8 @@
       %th Total
     - @record.tags_hash.each do |tag, weight|
       %tr
-        %td= tag
+        %td
+          %i= tag
         %td= @record.static_tags_hash[tag] || 0
         %td= @record.dynamic_tags_hash[tag] || 0
         %td= weight
@@ -57,7 +58,7 @@
       %th Tags
     - @votes.each do |vote|
       %tr
-        %td= vote.weight == 1 ? '+' : '-'
+        %td= vote.weight
         %td
           %i= link_to vote.votable.inspect, "#{recommendation.root_path}#{controller.unparse_model vote.votable.class}/#{vote.votable.id}"
         %td= vote.votable.tags_hash
