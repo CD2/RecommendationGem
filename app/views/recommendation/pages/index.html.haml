@@ -1,23 +1,23 @@
 %h1 Recommendation Debug
 %h2
-  = link_to 'Root', '/'
+  = link_to 'Root', recommendation.root_path
   = '>'
-  = @model.name
+  = link_to @model.name, "#{recommendation.root_path}#{@model.name.underscore.pluralize}/"
 %h3 Tags
 %ul
   - @model.all_tags.each do |tag|
     %li
       %i= tag
       = " - (#{@model.tagged_with(tag).count} records)"
-%h3 Records by popularity score
+%h3 Records
 %table
   %tr
     %th Score
     %th Record
     %th Tags
-  - @model.by_popularity(include_score: true).order(id: :asc).each do |record|
+  - @records.each do |record|
     %tr
       %td= record.popularity_score
       %td
-        %i= link_to record.inspect, "/#{record.class.name.underscore.pluralize}/#{record.id}"
+        %i= link_to record.inspect, "#{recommendation.root_path}#{record.class.name.underscore.pluralize}/#{record.id}"
       %td= record.tags_hash

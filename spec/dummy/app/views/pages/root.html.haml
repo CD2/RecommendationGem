@@ -1,6 +1,0 @@
-%h1 Recommendation Debug
-%h2 Root
-- @models.each do |model|
-  %h3
-    = link_to model.name, "/#{model.name.underscore.pluralize}/"
-    = " (#{model.count} records)"

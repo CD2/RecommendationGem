@@ -1,0 +1,88 @@
+%h1 Recommendation Debug
+%h2
+  = link_to 'Root', recommendation.root_path
+  = '>'
+  = link_to @model.name, "#{recommendation.root_path}#{@model.name.underscore.pluralize}/"
+  = '>'
+  = link_to @record.id, "#{recommendation.root_path}#{@model.name.underscore.pluralize}/#{@record.id}"
+%i= @record.inspect
+%h3 Tags:
+- if @record.tags.any?
+  %table
+    %tr
+      %th Name
+      %th Weight (from static modifiers)
+      %th Weight (from dynamic voting)
+      %th Weight (total)
+    - @record.tags_hash.each do |tag, weight|
+      %tr
+        %td= tag
+        %td= @record.static_tags_hash[tag] || 0
+        %td= @record.dynamic_tags_hash[tag] || 0
+        %td= weight
+- else
+  none
+  %br
+%br
+= button_to 'Recalculate Tags', "#{recommendation.root_path}#{@model.name.underscore.pluralize}/#{@record.id}/recalculate"
+%h3 Votes as voter:
+- if @votes_as_voter.any?
+  %table
+    %tr
+      %th Score
+      %th Record
+      %th Tags
+    - @votes_as_voter.each do |vote|
+      %tr
+        %td= vote.weight
+        %td
+          %i= link_to vote.votable.inspect, "#{recommendation.root_path}#{vote.votable.class.name.underscore.pluralize}/#{vote.votable.id}"
+        %td= vote.votable.tags_hash
+- else
+  none
+%h3 Votes as votable:
+- if @votes_as_votable.any?
+  %table
+    %tr
+      %th Score
+      %th Record
+    - @votes_as_votable.each do |vote|
+      %tr
+        %td= vote.weight
+        %td
+          %i= link_to vote.voter.inspect, "#{recommendation.root_path}#{vote.voter.class.name.underscore.pluralize}/#{vote.voter.id}"
+- else
+  none
+%h3 Recommendations:
+= form_tag "#{recommendation.root_path}#{@model.name.underscore.pluralize}/#{@record.id}/bounce" do
+  %table
+    %tr
+      %td Model
+      %td Limit
+      %td Offset
+      %td
+    %tr
+      %td= select_tag 'target_model', options_for_select(@models.collect{ |x| [x.name, x.name.underscore.pluralize] }, params[:target_model])
+      %td= number_field_tag 'limit', @limit, min: 0, step: 1
+      %td= number_field_tag 'offset', @offset, min: 0, step: 1
+      %td= submit_tag 'Recommend'
+- if @records.any?
+  %br
+  %table
+    %tr
+      %th Score
+      %th Record
+      %th Tags
+    - @records.each do |record|
+      %tr
+        %td= record.recommendation_score
+        %td
+          %i= link_to record.inspect, "#{recommendation.root_path}#{record.class.name.underscore.pluralize}/#{record.id}"
+        %td= record.tags_hash
+  %br
+  - if @offset != 0
+    - params_string = { target_model: @target_model.name.underscore.pluralize, limit: @limit, offset: [@offset - @limit, 0].max }.to_param
+    = link_to 'Prev Page', "#{recommendation.root_path}#{@model.name.underscore.pluralize}/#{@record.id}/?#{params_string}"
+  - if @target_model.count > (@model == @target_model ? @offset + @records.size + 1 : @offset + @records.size)
+    - params_string = { target_model: @target_model.name.underscore.pluralize, limit: @limit, offset: @offset + @limit }.to_param
+    = link_to 'Next Page', "#{recommendation.root_path}#{@model.name.underscore.pluralize}/#{@record.id}/?#{params_string}"
