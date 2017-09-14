@@ -7,6 +7,7 @@ namespace :recommendation do
     old_num = Recommendation::Document.count
     models.each do |model|
       total = model.count
+      print "#{model.name} 0/#{total}\r"
       model.all.each_with_index do |record, i|
         print "#{model.name} #{i + 1}/#{total}\r"
         record.recommendation_document
