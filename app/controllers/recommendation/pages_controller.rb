@@ -1,7 +1,7 @@
 Dir['./app/models/**/*.rb'].each { |file| require_dependency file }
 
 module Recommendation
-  class PagesController < ApplicationController
+  class PagesController < Recommendation::ApplicationController
     before_action :set_models
     before_action :set_model, except: :root
     before_action :set_record, except: %i[root index index_bounce]
