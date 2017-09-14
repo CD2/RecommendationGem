@@ -28,7 +28,7 @@ module Recommendation
       @vote_limit = params[:vote_limit].present? ? params[:vote_limit].to_i : 10
       @vote_offset = params[:vote_offset].present? ? params[:vote_offset].to_i : 0
       @votes = @record.votes_as_voter.order(weight: :desc).includes(votable: :recommendation_document).limit(@vote_limit).offset(@vote_offset)
-      @target_model = get_model(params[:target_model]) || @models.reject{ |x| x == @model }.first
+      @target_model = get_model(params[:target_model]) || @models.reject{ |x| x == @model }.sort_by(&:name).first
       @limit = params[:limit].present? ? params[:limit].to_i : 10
       @offset = params[:offset].present? ? params[:offset].to_i : 0
 
