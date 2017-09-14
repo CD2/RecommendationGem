@@ -7,17 +7,46 @@
 %ul
   - @model.all_tags.each do |tag|
     %li
-      %i= tag
-      = " - (#{@model.tagged_with(tag).count} records)"
-%h3 Records
-%table
-  %tr
-    %th Score
-    %th Record
-    %th Tags
-  - @records.each do |record|
+      - if @tags.include? tag
+        %i= tag
+      - else
+        %i= link_to(tag, "#{recommendation.root_path}#{@model.name.underscore.pluralize}/?#{{ tags: @tags + [tag] }.to_param}")
+        = " - (#{Q.simple_count(@records.tagged_with(tag))} records)"
+%h3= "Records (#{Q.simple_count(@records.except(:offset, :limit))})"
+- if @tags.any?
+  Tagged with:
+  = raw @tags.map { |tag| link_to tag, "#{recommendation.root_path}#{@model.name.underscore.pluralize}/?#{{ tags: @tags - [tag] }.to_param}" }.join(', ')
+  %br
+  %br
+= form_tag "#{recommendation.root_path}#{@model.name.underscore.pluralize}/bounce" do
+  - @tags.each do |tag|
+    = hidden_field_tag 'tags[]', tag
+  %table
     %tr
-      %td= record.popularity_score
+      %td Limit
+      %td Offset
       %td
-        %i= link_to record.inspect, "#{recommendation.root_path}#{record.class.name.underscore.pluralize}/#{record.id}"
-      %td= record.tags_hash
+    %tr
+      %td= number_field_tag 'limit', @limit, min: 0, step: 1
+      %td= number_field_tag 'offset', @offset, min: 0, step: 1
+      %td= submit_tag 'Apply'
+  %br
+- if @records.any?
+  %table
+    %tr
+      %th Popularity
+      %th Record
+      %th Tags
+    - @records.each do |record|
+      %tr
+        %td= record.popularity_score
+        %td
+          %i= link_to record.inspect, "#{recommendation.root_path}#{record.class.name.underscore.pluralize}/#{record.id}"
+        %td= record.tags_hash
+  %br
+  - if @offset != 0
+    - params_string = @params.merge({ offset: [@offset - @limit, 0].max }).to_param
+    = link_to 'Prev Page', "#{recommendation.root_path}#{@model.name.underscore.pluralize}/?#{params_string}"
+  - if Q.simple_count(@records.except(:offset, :limit)) > @offset + @records.size
+    - params_string = @params.merge({ offset: @offset + @limit }).to_param
+    = link_to 'Next Page', "#{recommendation.root_path}#{@model.name.underscore.pluralize}/?#{params_string}"

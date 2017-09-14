@@ -4,4 +4,5 @@ Recommendation::Engine.routes.draw do
   get '/:model/:id', to: 'pages#show'
   post '/:model/:id/recalculate', to: 'pages#recalculate'
   post '/:model/:id/bounce', to: 'pages#show_bounce'
+  post '/:model/bounce', to: 'pages#index_bounce'
 end

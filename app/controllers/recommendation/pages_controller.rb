@@ -4,27 +4,41 @@ module Recommendation
   class PagesController < ApplicationController
     before_action :set_models
     before_action :set_model, except: :root
-    before_action :set_record, except: %i[root index]
+    before_action :set_record, except: %i[root index index_bounce]
 
     def root ; end
 
     def index
-      @records = @model.by_popularity(include_score: true).order(id: :asc)
+      @params = params.permit!.slice(:tags, :limit, :offset)
+
+      @tags = Array.wrap(params[:tags]) || []
+      @limit = params[:limit].present? ? params[:limit].to_i : 10
+      @offset = params[:offset].present? ? params[:offset].to_i : 0
+      @records = @model.by_popularity(include_score: true).order(id: :asc).includes(:recommendation_document).limit(@limit).offset(@offset)
+      @records = @records.tagged_with(*@tags) if @tags.present?
     end
 
     def show
-      @votes_as_voter = @record.votes_as_voter.order(weight: :desc).includes(votable: :recommendation_document)
-      @votes_as_votable = @record.votes_as_votable.order(weight: :desc).includes(:voter)
-      @target_model = get_model(params[:target_model])
-      @limit = params[:limit]&.to_i || 10
-      @offset = params[:offset]&.to_i || 0
+      @params = params.permit!.slice(:vote_limit, :vote_offset, :target_model, :limit, :offset)
+
+      @vote_limit = params[:vote_limit].present? ? params[:vote_limit].to_i : 10
+      @vote_offset = params[:vote_offset].present? ? params[:vote_offset].to_i : 0
+      @votes = @record.votes_as_voter.order(weight: :desc).includes(votable: :recommendation_document).limit(@vote_limit).offset(@vote_offset)
+      @target_model = get_model(params[:target_model]) || @models.reject{ |x| x == @model }.first
+      @limit = params[:limit].present? ? params[:limit].to_i : 10
+      @offset = params[:offset].present? ? params[:offset].to_i : 0
       return @records = [] unless @target_model
       @records = @target_model.recommend_to(@record, include_score: true).limit(@limit).offset(@offset).includes(:recommendation_document)
     end
 
     def show_bounce
-      params_string = params.permit!.slice(:target_model, :limit, :offset).to_param
+      params_string = params.permit!.slice(:target_model, :limit, :offset, :vote_limit, :vote_offset).to_param
       redirect_to "#{recommendation.root_path}#{@model.name.underscore.pluralize}/#{@record.id}?#{params_string}"
+    end
+
+    def index_bounce
+      params_string = params.permit!.slice(:tags, :limit, :offset).to_param
+      redirect_to "#{recommendation.root_path}#{@model.name.underscore.pluralize}/?#{params_string}"
     end
 
     def recalculate

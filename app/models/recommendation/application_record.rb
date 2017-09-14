@@ -1,6 +1,7 @@
 require_dependency "#{Recommendation::Engine.root}/lib/q/join.rb"
 require_dependency "#{Recommendation::Engine.root}/lib/q/table_mock.rb"
 require_dependency "#{Recommendation::Engine.root}/lib/q/query_chain.rb"
+require_dependency "#{Recommendation::Engine.root}/lib/q/simple_count.rb"
 
 module Recommendation
   def self.all_tags

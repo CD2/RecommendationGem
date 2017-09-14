@@ -5,15 +5,22 @@
   = link_to @model.name, "#{recommendation.root_path}#{@model.name.underscore.pluralize}/"
   = '>'
   = link_to @record.id, "#{recommendation.root_path}#{@model.name.underscore.pluralize}/#{@record.id}"
+
 %i= @record.inspect
+%br
+%br
+= "Popularity: #{@record.popularity_score}"
+
 %h3 Tags:
 - if @record.tags.any?
-  %table
+  %table{style: 'min-width: 500px;'}
     %tr
-      %th Name
-      %th Weight (from static modifiers)
-      %th Weight (from dynamic voting)
-      %th Weight (total)
+      %th{ rowspan: 2 } Name
+      %th{ colspan: 3 } Score
+    %tr
+      %th Static
+      %th Dynamic
+      %th Total
     - @record.tags_hash.each do |tag, weight|
       %tr
         %td= tag
@@ -25,36 +32,50 @@
   %br
 %br
 = button_to 'Recalculate Tags', "#{recommendation.root_path}#{@model.name.underscore.pluralize}/#{@record.id}/recalculate"
-%h3 Votes as voter:
-- if @votes_as_voter.any?
+%br
+%br
+%h3 Votes:
+= form_tag "#{recommendation.root_path}#{@model.name.underscore.pluralize}/#{@record.id}/bounce" do
+  = hidden_field_tag 'target_model', @target_model.name.underscore.pluralize
+  = hidden_field_tag 'limit', @limit
+  = hidden_field_tag 'offset', @offset
   %table
     %tr
-      %th Score
+      %td Limit
+      %td Offset
+      %td
+    %tr
+      %td= number_field_tag 'vote_limit', @vote_limit, min: 0, step: 1
+      %td= number_field_tag 'vote_offset', @vote_offset, min: 0, step: 1
+      %td= submit_tag 'Apply'
+%br
+- if @votes.any?
+  %table
+    %tr
+      %th Weight
       %th Record
       %th Tags
-    - @votes_as_voter.each do |vote|
+    - @votes.each do |vote|
       %tr
-        %td= vote.weight
+        %td= vote.weight == 1 ? '+' : '-'
         %td
           %i= link_to vote.votable.inspect, "#{recommendation.root_path}#{vote.votable.class.name.underscore.pluralize}/#{vote.votable.id}"
         %td= vote.votable.tags_hash
+  %br
+  - if @vote_offset != 0
+    - params_string = @params.merge({ vote_offset: [@vote_offset - @vote_limit, 0].max }).to_param
+    = link_to 'Prev Page', "#{recommendation.root_path}#{@model.name.underscore.pluralize}/#{@record.id}/?#{params_string}"
+  - if @votes.except(:offset, :limit).count > @vote_offset + @votes.size
+    - params_string = @params.merge({ vote_offset: @vote_offset + @vote_limit }).to_param
+    = link_to 'Next Page', "#{recommendation.root_path}#{@model.name.underscore.pluralize}/#{@record.id}/?#{params_string}"
 - else
   none
-%h3 Votes as votable:
-- if @votes_as_votable.any?
-  %table
-    %tr
-      %th Score
-      %th Record
-    - @votes_as_votable.each do |vote|
-      %tr
-        %td= vote.weight
-        %td
-          %i= link_to vote.voter.inspect, "#{recommendation.root_path}#{vote.voter.class.name.underscore.pluralize}/#{vote.voter.id}"
-- else
-  none
+%br
+%br
 %h3 Recommendations:
 = form_tag "#{recommendation.root_path}#{@model.name.underscore.pluralize}/#{@record.id}/bounce" do
+  = hidden_field_tag 'vote_limit', @vote_limit
+  = hidden_field_tag 'vote_offset', @vote_offset
   %table
     %tr
       %td Model
@@ -62,10 +83,10 @@
       %td Offset
       %td
     %tr
-      %td= select_tag 'target_model', options_for_select(@models.collect{ |x| [x.name, x.name.underscore.pluralize] }, params[:target_model])
+      %td= select_tag 'target_model', options_for_select(@models.collect{ |x| [x.name, x.name.underscore.pluralize] }, @target_model.name.underscore.pluralize)
       %td= number_field_tag 'limit', @limit, min: 0, step: 1
       %td= number_field_tag 'offset', @offset, min: 0, step: 1
-      %td= submit_tag 'Recommend'
+      %td= submit_tag 'Apply'
 - if @records.any?
   %br
   %table
@@ -81,8 +102,8 @@
         %td= record.tags_hash
   %br
   - if @offset != 0
-    - params_string = { target_model: @target_model.name.underscore.pluralize, limit: @limit, offset: [@offset - @limit, 0].max }.to_param
+    - params_string = @params.merge({ offset: [@offset - @limit, 0].max }).to_param
     = link_to 'Prev Page', "#{recommendation.root_path}#{@model.name.underscore.pluralize}/#{@record.id}/?#{params_string}"
   - if @target_model.count > (@model == @target_model ? @offset + @records.size + 1 : @offset + @records.size)
-    - params_string = { target_model: @target_model.name.underscore.pluralize, limit: @limit, offset: @offset + @limit }.to_param
+    - params_string = @params.merge({ offset: @offset + @limit }).to_param
     = link_to 'Next Page', "#{recommendation.root_path}#{@model.name.underscore.pluralize}/#{@record.id}/?#{params_string}"
