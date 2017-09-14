@@ -2,5 +2,5 @@
 %h2= link_to 'Root', recommendation.root_path
 - @models.each do |model|
   %h3
-    = link_to model.name, "#{recommendation.root_path}#{model.name.underscore.pluralize}/"
+    = link_to model.name, "#{recommendation.root_path}#{controller.unparse_model model}/"
     = " (#{model.count} records)"
