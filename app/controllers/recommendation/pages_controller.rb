@@ -6,7 +6,9 @@ module Recommendation
     before_action :set_model, except: :root
     before_action :set_record, except: %i[root index index_bounce]
 
-    def root ; end
+    def root
+      @models = @models.sort_by(&:name)
+    end
 
     def index
       @params = params.permit!.slice(:tags, :limit, :offset)
