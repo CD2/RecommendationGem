@@ -10,10 +10,15 @@ module Recommendation
     end
 
     def self.tagged_with *tag_names
+      options = tag_names.extract_options!
+      options.assert_valid_keys(:allow_negative)
+      allow_negative = options.fetch(:allow_negative, false)
+
       tag_names.map! { |x| normalize(x) }
       query_chain do
         expand_json(:tags_cache)
-        where('value::numeric > 0 AND key IN (?)', tag_names)
+        where('key IN (?)', tag_names)
+        where('value::numeric > 0') unless allow_negative
         group(:id)
         having('COUNT(key) = ?', tag_names.count)
       end

@@ -17,7 +17,7 @@ module Recommendation
       @limit = params[:limit].present? ? params[:limit].to_i : 10
       @offset = params[:offset].present? ? params[:offset].to_i : 0
       @records = @model.by_popularity(include_score: true).order(id: :asc).includes(:recommendation_document).limit(@limit).offset(@offset)
-      @records = @records.tagged_with(*@tags) if @tags.present?
+      @records = @records.tagged_with(*@tags, allow_negative: true) if @tags.present?
     end
 
     def show
