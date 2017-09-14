@@ -33,17 +33,25 @@ module Recommendation
 
     def show_bounce
       params_string = params.permit!.slice(:target_model, :limit, :offset, :vote_limit, :vote_offset).to_param
-      redirect_to "#{recommendation.root_path}#{@model.name.underscore.pluralize}/#{@record.id}?#{params_string}"
+      redirect_to "#{recommendation.root_path}#{unparse_model @model}/#{@record.id}?#{params_string}"
     end
 
     def index_bounce
       params_string = params.permit!.slice(:tags, :limit, :offset).to_param
-      redirect_to "#{recommendation.root_path}#{@model.name.underscore.pluralize}/?#{params_string}"
+      redirect_to "#{recommendation.root_path}#{unparse_model @model}/?#{params_string}"
     end
 
     def recalculate
       @record.recalculate_tags!
-      redirect_to "#{recommendation.root_path}#{@model.name.underscore.pluralize}/#{@record.id}"
+      redirect_to "#{recommendation.root_path}#{unparse_model @model}/#{@record.id}"
+    end
+
+    def parse_model(input)
+      input.singularize.camelcase
+    end
+
+    def unparse_model(input)
+      input.name.underscore.pluralize
     end
 
     private
@@ -57,7 +65,7 @@ module Recommendation
     end
 
     def get_model(input = params[:model])
-      result = input.singularize.camelcase.constantize rescue nil
+      result = parse_model(input).constantize rescue nil
       result.in?(@models) ? result : nil
     end
 

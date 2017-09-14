@@ -1,3 +1,6 @@
 %h1 Recommendation Debug
 %h2 Error: Bad Model
-%h3= "No such model: #{params[:model]&.singularize&.camelcase}"
+- if (controller.parse_model(params[:model]).constantize rescue nil)
+  %h3= "Model (#{controller.parse_model(params[:model])}) does not include Recommendable"
+- else
+  %h3= "No such model: #{controller.parse_model(params[:model])}"

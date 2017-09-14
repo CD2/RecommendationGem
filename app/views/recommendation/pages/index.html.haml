@@ -2,7 +2,7 @@
 %h2
   = link_to 'Root', recommendation.root_path
   = '>'
-  = link_to @model.name, "#{recommendation.root_path}#{@model.name.underscore.pluralize}/"
+  = link_to @model.name, "#{recommendation.root_path}#{controller.unparse_model @model}/"
 %h3 Tags
 %ul
   - @model.all_tags.each do |tag|
@@ -10,15 +10,15 @@
       - if @tags.include? tag
         %i= tag
       - else
-        %i= link_to(tag, "#{recommendation.root_path}#{@model.name.underscore.pluralize}/?#{{ tags: @tags + [tag] }.to_param}")
+        %i= link_to(tag, "#{recommendation.root_path}#{controller.unparse_model @model}/?#{{ tags: @tags + [tag] }.to_param}")
         = " - (#{Q.simple_count(@records.tagged_with(tag))} records)"
 %h3= "Records (#{Q.simple_count(@records.except(:offset, :limit))})"
 - if @tags.any?
   Tagged with:
-  = raw @tags.map { |tag| link_to tag, "#{recommendation.root_path}#{@model.name.underscore.pluralize}/?#{{ tags: @tags - [tag] }.to_param}" }.join(', ')
+  = raw @tags.map { |tag| link_to tag, "#{recommendation.root_path}#{controller.unparse_model @model}/?#{{ tags: @tags - [tag] }.to_param}" }.join(', ')
   %br
   %br
-= form_tag "#{recommendation.root_path}#{@model.name.underscore.pluralize}/bounce" do
+= form_tag "#{recommendation.root_path}#{controller.unparse_model @model}/bounce" do
   - @tags.each do |tag|
     = hidden_field_tag 'tags[]', tag
   %table
@@ -41,12 +41,12 @@
       %tr
         %td= record.popularity_score
         %td
-          %i= link_to record.inspect, "#{recommendation.root_path}#{record.class.name.underscore.pluralize}/#{record.id}"
+          %i= link_to record.inspect, "#{recommendation.root_path}#{controller.unparse_model record.class}/#{record.id}"
         %td= record.tags_hash
   %br
   - if @offset != 0
     - params_string = @params.merge({ offset: [@offset - @limit, 0].max }).to_param
-    = link_to 'Prev Page', "#{recommendation.root_path}#{@model.name.underscore.pluralize}/?#{params_string}"
+    = link_to 'Prev Page', "#{recommendation.root_path}#{controller.unparse_model @model}/?#{params_string}"
   - if Q.simple_count(@records.except(:offset, :limit)) > @offset + @records.size
     - params_string = @params.merge({ offset: @offset + @limit }).to_param
-    = link_to 'Next Page', "#{recommendation.root_path}#{@model.name.underscore.pluralize}/?#{params_string}"
+    = link_to 'Next Page', "#{recommendation.root_path}#{controller.unparse_model @model}/?#{params_string}"
