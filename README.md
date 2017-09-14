@@ -24,6 +24,10 @@ $ rake recommendation:create_docs
 ## Basic Usage
 Include the 'Recommendable' concern in all models that have tags or votes. For example, if you had a User model and an Article model, *both* should include Recommendable.
 
+```ruby
+include Recommendable
+```
+
 Recommendables may be given static tags using 'tag_with' and 'remove_tag':
 
 ```ruby
