@@ -20,12 +20,31 @@ module Recommendable
 
     def self.recommend_to(subject, opts = {})
       options = opts.to_options
+      options.assert_valid_keys(:exclude_self, :include_score, :order, :consider)
+      exclude_self = options.fetch(:exclude_self, true)
+      include_score = options.fetch(:include_score, false)
+      order_results = options.fetch(:order, true)
+      consider = options.fetch(:consider, :tags)
+
+      return by_tags(subject, opts) unless options[:consider]
+
+      raise NotImplementedError
+
+      influences = Array.wrap(consider)
+      influences_hash = influences.extract_options!
+      influences.each { |x| influences_hash[x] ||= 1 }
+
+      Recommendation::Document.composite(all, subject, influences_hash)
+    end
+
+    def self.by_tags(subject, opts = {})
+      options = opts.to_options
       options.assert_valid_keys(:exclude_self, :include_score, :order)
       exclude_self = options.fetch(:exclude_self, true)
       include_score = options.fetch(:include_score, false)
       order_results = options.fetch(:order, true)
 
-      scores = Recommendation::Document.recommend(all, subject)
+      scores = Recommendation::Document.by_tags(all, subject)
 
       result = all
 
@@ -69,6 +88,33 @@ module Recommendable
       end
 
       result.joins("LEFT JOIN (#{scores}) AS popularity ON popularity.id = #{table_name}.id")
+    end
+
+    def self.by_distance_to(subject, opts = {})
+      options = opts.to_options
+      options.assert_valid_keys(:exclude_self, :include_distance, :order)
+      exclude_self = options.fetch(:exclude_self, true)
+      include_distance = options.fetch(:include_distance, false)
+      order_results = options.fetch(:order, true)
+
+      distances = Recommendation::Document.by_distance(all, subject.recommendation_document)
+
+      result = all
+
+      if exclude_self && subject.is_a?(all.klass)
+        result = result.where.not(id: subject.id)
+      end
+
+      if include_distance
+        result = result.select(Q.quote(table_name, :*)) if result.select_values.empty?
+        result = result.select('distances.distance')
+      end
+
+      if order_results
+        result = result.order('distances.distance ASC NULLS LAST')
+      end
+
+      result.joins("LEFT JOIN (#{distances}) AS distances ON distances.recommendable_id = #{table_name}.id")
     end
   end
 
@@ -146,5 +192,14 @@ module Recommendable
 
   def popularity_score(force = false)
     !force && attributes['popularity_score'] || votes_as_votable.pluck(:weight).sum
+  end
+
+  def distance_to(subject)
+    subject.class.where(id: subject.id)
+    .by_distance_to(self).pluck('distances.distance').first
+  end
+
+  def coordinates
+    [recommendation_document.lat, recommendation_document.lng]
   end
 end

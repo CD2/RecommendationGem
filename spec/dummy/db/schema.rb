@@ -10,10 +10,12 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170907104651) do
+ActiveRecord::Schema.define(version: 20170914145659) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+  enable_extension "cube"
+  enable_extension "earthdistance"
 
   create_table "articles", force: :cascade do |t|
     t.string "name"
@@ -26,8 +28,11 @@ ActiveRecord::Schema.define(version: 20170907104651) do
     t.bigint "recommendable_id"
     t.jsonb "static_tags", default: {}, null: false
     t.jsonb "tags_cache", default: {}, null: false
+    t.float "lat"
+    t.float "lng"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index "point(lng, lat)", name: "index_recommendation_documents_on_point_lng_lat", using: :gist
     t.index ["recommendable_id", "recommendable_type"], name: "index_recommendation_documents_on_recommendable", unique: true
     t.index ["static_tags"], name: "index_recommendation_documents_on_static_tags", using: :gin
     t.index ["tags_cache"], name: "index_recommendation_documents_on_tags_cache", using: :gin

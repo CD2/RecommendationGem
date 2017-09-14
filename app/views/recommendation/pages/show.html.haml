@@ -10,6 +10,12 @@
 %br
 %br
 = "Popularity: #{@record.popularity_score}"
+%br
+= "Location:"
+- if @record.coordinates.any?
+  = "(#{@record.coordinates.join(', ')})"
+- else
+  nil
 
 %h3 Tags:
 - if @record.tags.any?

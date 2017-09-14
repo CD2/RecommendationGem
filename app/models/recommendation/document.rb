@@ -81,11 +81,11 @@ module Recommendation
       save!
     end
 
-    def self.r_score_formula
+    def self.tag_match_formula
       'coalesce((SUM(subject_doc.value * model_docs.value)), 0)'
     end
 
-    def self.recommend relation, subject
+    def self.by_tags relation, subject
       qlass = relation.klass
 
       subject_doc = query_chain do
@@ -109,7 +109,22 @@ module Recommendation
         )
         group(:recommendable_id)
         select(:recommendable_id)
-        select("#{@self.r_score_formula} AS score")
+        select("#{@self.tag_match_formula} AS score")
+        to_sql
+      end
+    end
+
+    def self.by_distance(relation, subject)
+      qlass = relation.klass
+
+      query_chain do
+        where(recommendable_type: qlass.name)
+        select(:recommendable_id)
+        if subject.lat && subject.lng
+          select("point(lng, lat) <@> point(#{subject.lng}, #{subject.lat}) AS distance")
+        else
+          select('NULL::float AS distance')
+        end
         to_sql
       end
     end
