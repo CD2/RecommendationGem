@@ -15,10 +15,16 @@ $ rake recommendation:install:migrations
 $ rake db:migrate
 ```
 
+Recommendation relies on Recommendation Documents, which are created for records as and when they are required.
+These can be pre-created for all existing records by running:
+```bash
+$ rake recommendation:create_docs
+```
+
 ## Basic Usage
 Include the 'Recommendable' concern in all models that have tags or votes. For example, if you had a User model and an Article model, *both* should include Recommendable.
 
-Recommendables may be given tags using 'tag_with' and 'remove_tag':
+Recommendables may be given static tags using 'tag_with' and 'remove_tag':
 
 ```ruby
 Article.first.tag_with(:sports, :football)
