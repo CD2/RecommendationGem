@@ -30,7 +30,7 @@ module Recommendation
       @limit = params[:limit].present? ? params[:limit].to_i : 10
       @offset = params[:offset].present? ? params[:offset].to_i : 0
       return @records = [] unless @target_model
-      @records = @target_model.recommend_to(@record, include_score: true).limit(@limit).offset(@offset).includes(:recommendation_document)
+      @records = @target_model.recommend_to(@record, include_score: true).order(id: :asc).limit(@limit).offset(@offset).includes(:recommendation_document)
     end
 
     def show_bounce
