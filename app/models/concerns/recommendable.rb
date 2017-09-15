@@ -4,9 +4,15 @@ module Recommendable
   extend ActiveSupport::Concern
 
   included do
-    has_one :recommendation_document, as: :recommendable, inverse_of: :recommendable, class_name: 'Recommendation::Document'
-    has_many :votes_as_voter, as: :voter, inverse_of: :voter, class_name: 'Recommendation::Vote'
-    has_many :votes_as_votable, as: :votable, inverse_of: :votable, class_name: 'Recommendation::Vote'
+    has_one :recommendation_document, as: :recommendable,
+                                      inverse_of: :recommendable,
+                                      class_name: 'Recommendation::Document'
+    has_many :votes_as_voter, as: :voter,
+                              inverse_of: :voter,
+                              class_name: 'Recommendation::Vote'
+    has_many :votes_as_votable, as: :votable,
+                                inverse_of: :votable,
+                                class_name: 'Recommendation::Vote'
 
     def self.tagged_with(*tag_names)
       docs = Recommendation::Document
