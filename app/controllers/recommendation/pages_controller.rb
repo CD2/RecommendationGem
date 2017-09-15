@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+# rubocop:disable all
 
 Dir['./app/models/**/*.rb'].each { |file| require_dependency file }
 
