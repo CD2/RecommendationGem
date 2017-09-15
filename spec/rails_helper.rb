@@ -15,16 +15,18 @@ Dir["#{File.dirname(__FILE__)}/factories/**/*.rb"].each { |f| require f }
 
 require 'simplecov'
 SimpleCov.start do
-  add_group 'Controllers', 'app/controllers'
   add_group 'Models', 'app/models'
-  add_group 'Helpers', 'app/helpers'
-  add_group 'Views', 'app/views'
   add_group 'Libraries', 'lib'
 
   add_filter '/spec/'
+  add_filter '/controllers/'
   add_filter '/scripts/'
   add_filter '/locales/'
   add_filter '/lib/tasks/local_setup_tasks'
+
+  add_filter '/lib/recommendation.rb'
+  add_filter '/lib/recommendation/engine.rb'
+  add_filter '/lib/recommendation/version.rb'
 
   track_files "{app,lib}/**/*.rb"
 end
