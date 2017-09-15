@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 Dir['./app/models/**/*.rb'].each { |file| require_dependency file }
 
 module Recommendation
@@ -6,7 +8,7 @@ module Recommendation
     before_action :set_model, except: :root
     before_action :set_record, except: %i[root index index_bounce]
 
-    def root ; end
+    def root; end
 
     def index
       @params = params.permit!.slice(:tags, :limit, :offset)
@@ -26,7 +28,7 @@ module Recommendation
       @vote_limit = params[:vote_limit].present? ? params[:vote_limit].to_i : 10
       @vote_offset = params[:vote_offset].present? ? params[:vote_offset].to_i : 0
       @votes = @record.votes_as_voter.order(weight: :desc).includes(votable: :recommendation_document).limit(@vote_limit).offset(@vote_offset)
-      @target_model = get_model(params[:target_model]) || @models.reject{ |x| x == @model }.first
+      @target_model = get_model(params[:target_model]) || @models.reject { |x| x == @model }.first
       @limit = params[:limit].present? ? params[:limit].to_i : 10
       @offset = params[:offset].present? ? params[:offset].to_i : 0
 
@@ -72,12 +74,20 @@ module Recommendation
     end
 
     def get_model(input = params[:model])
-      result = parse_model(input).constantize rescue nil
+      result = begin
+                 parse_model(input).constantize
+               rescue
+                 nil
+               end
       result.in?(@models) ? result : nil
     end
 
     def set_record
-      @record = @model.find(params[:id]) rescue nil
+      @record = begin
+                  @model.find(params[:id])
+                rescue
+                  nil
+                end
       render :bad_record unless @record
     end
   end

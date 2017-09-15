@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
 module Recommendation
   class Vote < ::Recommendation::ApplicationRecord
     belongs_to :voter, polymorphic: true, inverse_of: :votes_as_voter
     belongs_to :votable, polymorphic: true, inverse_of: :votes_as_votable
 
-    validates_inclusion_of :weight, in: [-1, 1]
+    validates :weight, inclusion: { in: [-1, 1] }
     validates :voter_id, uniqueness: { scope: %i[voter_type votable_id votable_type] }
 
     scope :up, -> { where(weight: 1) }

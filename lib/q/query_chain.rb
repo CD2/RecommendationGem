@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_dependency "#{File.dirname(__FILE__)}/core.rb"
 require 'binding_of_caller'
 

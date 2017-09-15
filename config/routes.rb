@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 Recommendation::Engine.routes.draw do
   root 'pages#root'
   get '/:model/', to: 'pages#index'

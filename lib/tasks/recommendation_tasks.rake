@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 namespace :recommendation do
   desc 'Create Recommendation::Documents for all Recommendables, speeding up future load-time'
   task create_docs: :environment do

@@ -1,6 +1,8 @@
+# frozen_string_literal: true
+
 module Q
-  def self.quote *args
-    args.join('.').gsub('"', '').split('.').map do |x|
+  def self.quote(*args)
+    args.join('.').delete('"').split('.').map do |x|
       x.to_s == '*' ? '*' : "\"#{x}\""
     end.join('.')
   end
@@ -10,11 +12,11 @@ module Q
 
     delegate :raw, :sql_execute, :sql_calculate, to: :class
 
-    def self.sql_execute command
+    def self.sql_execute(command)
       connection.execute(command).to_a
     end
 
-    def self.sql_calculate command
+    def self.sql_calculate(command)
       sql_execute(command).first&.values&.first
     end
 

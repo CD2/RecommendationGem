@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Recommendable
   extend ActiveSupport::Concern
 
@@ -8,9 +10,9 @@ module Recommendable
 
     def self.tagged_with(*tag_names)
       docs = Recommendation::Document
-      .where(recommendable_type: name)
-      .tagged_with(*tag_names)
-      .select(:recommendable_id)
+             .where(recommendable_type: name)
+             .tagged_with(*tag_names)
+             .select(:recommendable_id)
       where(id: docs)
     end
 
@@ -71,10 +73,10 @@ module Recommendable
       order_results = options.fetch(:order, true)
 
       scores = left_joins(:votes_as_votable)
-      .group(:id)
-      .select(:id)
-      .select('SUM(recommendation_votes.weight) AS score')
-      .to_sql
+               .group(:id)
+               .select(:id)
+               .select('SUM(recommendation_votes.weight) AS score')
+               .to_sql
 
       result = all
 
@@ -154,8 +156,8 @@ module Recommendable
   end
 
   def dynamic_tags_hash
-    result = tags_hash.merge(static_tags_hash) { |k, v1, v2| v1 - v2 }
-    result.reject { |k, v| v.zero? }.to_h.with_indifferent_access
+    result = tags_hash.merge(static_tags_hash) { |_k, v1, v2| v1 - v2 }
+    result.reject { |_k, v| v.zero? }.to_h.with_indifferent_access
   end
 
   def recalculate_tags!
@@ -166,7 +168,7 @@ module Recommendable
 
   def recommendation_score_for(subject)
     subject.class.where(id: subject.id)
-    .recommend_to(self).pluck(:recommendation_score).first
+           .recommend_to(self).pluck(:recommendation_score).first
   end
 
   def vote_up(votable)
@@ -196,7 +198,7 @@ module Recommendable
 
   def distance_to(subject)
     subject.class.where(id: subject.id)
-    .by_distance_to(self).pluck('distances.distance').first
+           .by_distance_to(self).pluck('distances.distance').first
   end
 
   def coordinates

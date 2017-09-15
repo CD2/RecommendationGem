@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_dependency "#{File.dirname(__FILE__)}/core.rb"
 
 module Q
@@ -29,13 +31,13 @@ module Q
       end
       on = 'TRUE'
       if options[:on]
-        on = options[:on].map { |x|
+        on = options[:on].map do |x|
           if x.is_a? Array
             "#{Q.quote(table_name, x[0])} = #{Q.quote(target_name, x[1])}"
           else
             x.to_s
           end
-        }.join(' AND ')
+        end.join(' AND ')
       end
       joins("#{join_type} #{target}#{as} ON #{on}")
     end

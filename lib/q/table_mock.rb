@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_dependency "#{File.dirname(__FILE__)}/core.rb"
 
 module Q
@@ -21,7 +23,7 @@ module Q
       @string = string
     end
 
-    def method_missing(name, *args, &block)
+    def method_missing(name, *_args)
       Q.quote(@string, name)
     end
 

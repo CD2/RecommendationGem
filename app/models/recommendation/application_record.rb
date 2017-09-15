@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_dependency "#{Recommendation::Engine.root}/lib/q/join.rb"
 require_dependency "#{Recommendation::Engine.root}/lib/q/table_mock.rb"
 require_dependency "#{Recommendation::Engine.root}/lib/q/query_chain.rb"
@@ -8,14 +10,14 @@ module Recommendation
     ::Recommendation::Document.all_tags
   end
 
-  def self.tagged_with *tag_names
+  def self.tagged_with(*tag_names)
     ::Recommendation::Document.tagged_with(*tag_names)
   end
 
   class ApplicationRecord < Q::Core
     self.abstract_class = true
 
-    def self.expand_json field, opts  = {}
+    def self.expand_json(field, opts = {})
       options = opts.with_indifferent_access
       name = options[:as] || 'json'
       condition = options[:on] || 'TRUE'

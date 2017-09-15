@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'boot'
 
 require 'rails/all'
@@ -15,4 +17,3 @@ module Dummy
     # -- all .rb files in that directory are automatically loaded.
   end
 end
-

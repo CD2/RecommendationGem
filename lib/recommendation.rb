@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'recommendation/engine'
 
-module Recommendation ; end
+module Recommendation; end

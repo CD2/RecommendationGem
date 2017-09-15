@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Recommendation
   class Document < ::Recommendation::ApplicationRecord
     belongs_to :recommendable, polymorphic: true, inverse_of: :recommendation_document
@@ -9,7 +11,7 @@ module Recommendation
       pluck('DISTINCT jsonb_object_keys(tags_cache)')
     end
 
-    def self.tagged_with *tag_names
+    def self.tagged_with(*tag_names)
       options = tag_names.extract_options!
       options.assert_valid_keys(:allow_negative)
       allow_negative = options.fetch(:allow_negative, false)
@@ -29,8 +31,8 @@ module Recommendation
     end
 
     def remove_zero_tags
-      static_tags.reject! { |k, v| v == 0 }
-      tags_cache.reject! { |k, v| v == 0 }
+      static_tags.reject! { |_k, v| v == 0 }
+      tags_cache.reject! { |_k, v| v == 0 }
     end
 
     def update_tags_cache
@@ -44,7 +46,7 @@ module Recommendation
 
     def recalculate_tags
       dynamic_tags = {}
-      result = query_chain(Document) {
+      result = query_chain(Document) do
         expand_json(:tags_cache)
         inner_join Vote, on: {
           recommendable_id: :votable_id,
@@ -55,26 +57,26 @@ module Recommendation
         group(:tag)
         select('json.key AS tag')
         select("SUM(json.value::numeric * #{Vote.weight}) AS weight")
-      }
+      end
       result.raw.each { |x| dynamic_tags[x['tag']] = x['weight'].to_f }
-      self.tags_cache = static_tags.merge(dynamic_tags) { |k, v1, v2| v1 + v2 }
+      self.tags_cache = static_tags.merge(dynamic_tags) { |_k, v1, v2| v1 + v2 }
     end
 
-    def increment vote
+    def increment(vote)
       vote.votable.tags_hash.each do |tag, weight|
         cache_change tag, vote.weight * weight
       end
       save!
     end
 
-    def decrement vote
+    def decrement(vote)
       vote.votable.tags_hash.each do |tag, weight|
         cache_change tag, -1 * vote.weight * weight
       end
       save!
     end
 
-    def invert vote
+    def invert(vote)
       vote.votable.tags_hash.each do |tag, weight|
         cache_change tag, 2 * vote.weight * weight
       end
@@ -85,7 +87,7 @@ module Recommendation
       'coalesce((SUM(subject_doc.value * model_docs.value)), 0)'
     end
 
-    def self.by_tags relation, subject
+    def self.by_tags(relation, subject)
       qlass = relation.klass
 
       subject_doc = query_chain do
@@ -104,9 +106,8 @@ module Recommendation
       query_chain do
         from("(#{subject_doc}) AS subject_doc")
         right_join(model_docs,
-          as: :model_docs,
-          on: ['subject_doc.key = model_docs.key']
-        )
+                   as: :model_docs,
+                   on: ['subject_doc.key = model_docs.key'])
         group(:recommendable_id)
         select(:recommendable_id)
         select("#{@self.tag_match_formula} AS score")
