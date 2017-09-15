@@ -124,6 +124,28 @@ module Recommendable
 
       result.joins("LEFT JOIN (#{distances}) AS distances ON distances.recommendable_id = #{table_name}.id")
     end
+
+    def self.by_time(opts = {})
+      options = opts.to_options
+      options.assert_valid_keys(:include_score, :order)
+      include_score = options.fetch(:include_score, false)
+      order_results = options.fetch(:order, true)
+
+      scores = Recommendation::Document.by_time(all)
+
+      result = all
+
+      if include_score
+        result = result.select(Q.quote(table_name, :*)) if result.select_values.empty?
+        result = result.select('r_times.score AS age_score')
+      end
+
+      if order_results
+        result = result.order('r_times.score DESC')
+      end
+
+      result.joins("LEFT JOIN (#{scores}) AS r_times ON r_times.id = #{table_name}.id")
+    end
   end
 
   def recommendation_document

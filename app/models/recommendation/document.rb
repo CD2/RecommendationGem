@@ -129,5 +129,19 @@ module Recommendation
         to_sql
       end
     end
+
+    def self.by_time(relation)
+      age = 'GREATEST(EXTRACT(epoch FROM current_timestamp - created_at), 2)'
+      zero_age = 20.years.seconds
+      scaled_age = "((#{age} * 9) / #{zero_age}) + 1"
+      score = "1 - log(#{scaled_age})"
+      min_score = 0.5
+      score = "GREATEST(#{score}, #{min_score})"
+
+      # y = 1 - log(9x + 1) (above)
+      # y = 1 + log(1 - 9x/10) (not yet implemented)
+
+      relation.select(:id).select("#{score} AS score").to_sql
+    end
   end
 end
