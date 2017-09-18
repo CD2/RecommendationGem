@@ -19,7 +19,7 @@ module Recommendation
           model_docs = ::Recommendation::Document.where(recommendable_type: qlass)
 
           ::Recommendation::Vote.query_chain do
-            right_join(model_docs, on: { voter_id: :recommendable_id })
+            right_join(model_docs, on: { votable_id: :recommendable_id })
             where(votable_type: [qlass, nil])
             group(:recommendable_id)
             select('recommendable_id AS id')
