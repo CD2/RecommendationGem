@@ -8,7 +8,6 @@ module Recommendation
       included do
         def self.recommend_to(subject, opts = {})
           options = opts.to_options
-          options.assert_valid_keys(:exclude_self, :include_score, :order, :based_on)
           influences = Array.wrap(options.fetch(:based_on, :tags))
           options.delete(:based_on)
           influences_hash = influences.extract_options!.reject{ |_k, v| v == 0 }
@@ -48,11 +47,18 @@ module Recommendation
           if include_score
             result = result.select(Q.quote(table_name, :*)) if result.select_values.empty?
             result = result.select("#{metric}_metric.score AS #{metric}_score")
+            if metric.to_s == 'composite'
+              weights.each { |k, _v| result = result.select("#{k}_score") }
+            end
           end
 
           if include_value
             result = result.select(Q.quote(table_name, :*)) if result.select_values.empty?
-            result = result.select("#{metric}_metric.value AS #{metric}_value")
+            if metric.to_s == 'composite'
+              weights.each { |k, _v| result = result.select("#{k}_value") }
+            else
+              result = result.select("#{metric}_metric.value AS #{metric}_value")
+            end
           end
 
           result = result.order("#{metric}_metric.score DESC") if order_results
