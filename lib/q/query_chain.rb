@@ -45,6 +45,10 @@ module Q
       end
     end
 
+    def local
+      yield if block_given?
+    end
+
     def _result
       @relation
     end

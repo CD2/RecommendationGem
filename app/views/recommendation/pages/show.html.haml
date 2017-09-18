@@ -9,7 +9,7 @@
 %i= @record.inspect
 %br
 %br
-= "Popularity: #{@record.popularity_score}"
+= "Popularity: #{@record.popularity_value}"
 %br
 = "Location:"
 - if @record.coordinates.any?
@@ -86,13 +86,25 @@
   %table
     %tr
       %td Model
-      %td Limit
-      %td Offset
-      %td
     %tr
       %td= select_tag 'target_model', options_for_select(@models.collect{ |x| [x.name, controller.unparse_model(x)] }, controller.unparse_model(@target_model))
+    %tr
+      %td Distance
+      %td Popularity
+      %td Tags
+      %td Time
+    %tr
+      %td= number_field_tag 'based_on[distance]', @based_on['distance'] || 0.0, min: 0, step: :any
+      %td= number_field_tag 'based_on[popularity]', @based_on['popularity'] || 0.0, min: 0, step: :any
+      %td= number_field_tag 'based_on[tags]', @based_on['tags'] || 0.0, min: 0, step: :any
+      %td= number_field_tag 'based_on[time]', @based_on['time'] || 0.0, min: 0, step: :any
+    %tr
+      %td Limit
+      %td Offset
+    %tr
       %td= number_field_tag 'limit', @limit, min: 0, step: 1
       %td= number_field_tag 'offset', @offset, min: 0, step: 1
+    %tr
       %td= submit_tag 'Apply'
 - if @records.any?
   %br

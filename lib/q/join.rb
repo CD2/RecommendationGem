@@ -20,7 +20,10 @@ module Q
 
     def self.join(model, join_type, opts)
       options = opts.with_indifferent_access
-      target = "(#{model.to_sql})" if model.respond_to? :to_sql
+      if model.respond_to? :to_sql
+        target = "(#{model.to_sql})"
+        options[:as] ||= 'subquery'
+      end
       target ||= model.table_name if model.respond_to? :table_name
       target ||= model.to_s
       target_name = target

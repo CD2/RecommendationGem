@@ -17,14 +17,15 @@ module Recommendation
       @tags = Array.wrap(params[:tags]) || []
       @limit = params[:limit].present? ? params[:limit].to_i : 10
       @offset = params[:offset].present? ? params[:offset].to_i : 0
-      @records = @model.by_popularity(include_score: true).order(id: :asc).includes(:recommendation_document).limit(@limit).offset(@offset)
+      @records = @model.by_popularity(include_value: true).order(id: :asc).includes(:recommendation_document).limit(@limit).offset(@offset)
       @records = @records.tagged_with(*@tags, allow_negative: true) if @tags.present?
 
       @records.load
+      @record_size = Q.simple_count(@records.except(:offset, :limit))
     end
 
     def show
-      @params = params.permit!.slice(:vote_limit, :vote_offset, :target_model, :limit, :offset)
+      @params = params.permit!.slice(:vote_limit, :vote_offset, :target_model, :limit, :offset, :based_on)
 
       @vote_limit = params[:vote_limit].present? ? params[:vote_limit].to_i : 10
       @vote_offset = params[:vote_offset].present? ? params[:vote_offset].to_i : 0
@@ -32,17 +33,18 @@ module Recommendation
       @target_model = get_model(params[:target_model]) || @models.reject { |x| x == @model }.first
       @limit = params[:limit].present? ? params[:limit].to_i : 10
       @offset = params[:offset].present? ? params[:offset].to_i : 0
+      @based_on = params[:based_on].present? ? params[:based_on].to_h.map { |k, v| [k, v.to_f] }.to_h : { 'tags' => 1.0 }
 
       @votes.load
 
       return @records = [] unless @target_model
-      @records = @target_model.recommend_to(@record, include_score: true).order(id: :asc).limit(@limit).offset(@offset).includes(:recommendation_document)
+      @records = @target_model.recommend_to(@record, include_score: true, based_on: @based_on).order(id: :asc).limit(@limit).offset(@offset).includes(:recommendation_document)
 
       @records.load
     end
 
     def show_bounce
-      params_string = params.permit!.slice(:target_model, :limit, :offset, :vote_limit, :vote_offset).to_param
+      params_string = params.permit!.slice(:target_model, :limit, :offset, :vote_limit, :vote_offset, :based_on).to_param
       redirect_to "#{recommendation.root_path}#{unparse_model @model}/#{@record.id}?#{params_string}"
     end
 
@@ -67,7 +69,7 @@ module Recommendation
     private
 
     def set_models
-      @models = ::ApplicationRecord.descendants.select { |x| x.include?(Recommendable) }.sort_by(&:name)
+      @models = ::ApplicationRecord.descendants.select { |x| x.include?(::Recommendable) }.sort_by(&:name)
     end
 
     def set_model
