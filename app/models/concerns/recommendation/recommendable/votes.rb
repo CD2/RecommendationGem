@@ -19,22 +19,22 @@ module Recommendation
 
         def self.voted_up_by(voter)
           votes = voter.votes_as_voter.up.where(votable_type: all.klass.name)
-          where(id: votes.select(:id))
+          where(id: votes.select(:votable_id))
         end
 
         def self.voted_down_by(voter)
           votes = voter.votes_as_voter.down.where(votable_type: all.klass.name)
-          where(id: votes.select(:id))
+          where(id: votes.select(:votable_id))
         end
 
         def self.voted_on_by(voter)
           votes = voter.votes_as_voter.where(votable_type: all.klass.name)
-          where(id: votes.select(:id))
+          where(id: votes.select(:votable_id))
         end
 
         def self.not_voted_on_by(voter)
           votes = voter.votes_as_voter.where(votable_type: all.klass.name)
-          where.not(id: votes.select(:id))
+          where.not(id: votes.select(:votable_id))
         end
       end
 
