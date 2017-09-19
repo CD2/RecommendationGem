@@ -16,6 +16,26 @@ module Recommendation
           inverse_of: :votable,
           class_name: '::Recommendation::Vote'
         }
+
+        def self.voted_up_by(voter)
+          votes = voter.votes_as_voter.up.where(votable_type: all.klass.name)
+          where(id: votes.select(:id))
+        end
+
+        def self.voted_down_by(voter)
+          votes = voter.votes_as_voter.down.where(votable_type: all.klass.name)
+          where(id: votes.select(:id))
+        end
+
+        def self.voted_on_by(voter)
+          votes = voter.votes_as_voter.where(votable_type: all.klass.name)
+          where(id: votes.select(:id))
+        end
+
+        def self.not_voted_on_by(voter)
+          votes = voter.votes_as_voter.where(votable_type: all.klass.name)
+          where.not(id: votes.select(:id))
+        end
       end
 
       def vote_up(votable)

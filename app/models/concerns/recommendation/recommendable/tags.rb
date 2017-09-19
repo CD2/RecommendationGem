@@ -19,7 +19,10 @@ module Recommendation
         end
 
         def self.all_tags
-          ::Recommendation::Document.where(recommendable_type: name).all_tags
+          ::Recommendation::Document.where(
+            recommendable_type: all.klass.name,
+            recommendable_id: all.select(:id)
+          ).all_tags
         end
       end
 

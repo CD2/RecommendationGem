@@ -34,7 +34,7 @@ module Recommendation
         result = {}
         records = query_chain(::Recommendation::Document) do
           expand_json(:tags_cache)
-          inner_join Vote, on: {
+          inner_join ::Recommendation::Vote, on: {
             recommendable_id: :votable_id,
             recommendable_type: :votable_type
           }
@@ -42,7 +42,7 @@ module Recommendation
           where('voter_type = ?', recommendable_type)
           group(:tag)
           select('json.key AS tag')
-          select("SUM(json.value::numeric * #{Vote.weight}) AS weight")
+          select("SUM(json.value::numeric * recommendation_votes.weight) AS weight")
         end
         records.raw.each { |x| result[x['tag']] = x['weight'].to_f }
         result
