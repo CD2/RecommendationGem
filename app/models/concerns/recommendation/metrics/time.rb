@@ -9,7 +9,7 @@ module Recommendation
         def self.time_metric(relation, _subject = nil, _weights = nil)
           min_value = 0.5
 
-          age = 'GREATEST(EXTRACT(epoch FROM current_timestamp - created_at), 2)'
+          age = "GREATEST(EXTRACT(epoch FROM '#{::Time.now}' - created_at), 2)"
           score = Q::Metric.new(age).curve_decline(20.years.seconds).at_least(min_value)
 
           str = relation

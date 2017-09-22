@@ -9,7 +9,7 @@ module Recommendation
       before_save :remove_zero_tags
 
       def cache_change(tag, change)
-        tags_cache[tag] = (tags_cache[tag] || 0) + change
+        tags_cache[tag] = (tags_cache[tag] || 0.0) + change
       end
 
       def remove_zero_tags
@@ -32,7 +32,8 @@ module Recommendation
 
       def dynamic_tags
         result = {}
-        records = query_chain(::Recommendation::Document) do
+
+        tag_records = query_chain(::Recommendation::Document) do
           expand_json(:tags_cache)
           inner_join ::Recommendation::Vote, on: {
             recommendable_id: :votable_id,
@@ -44,11 +45,21 @@ module Recommendation
           select('json.key AS tag')
           select("SUM(json.value::numeric * recommendation_votes.weight) AS weight")
         end
-        records.raw.each { |x| result[x['tag']] = x['weight'].to_f }
+
+        model_records = query_chain(::Recommendation::Vote) do
+          where(voter_type: recommendable_type, voter_id: recommendable_id)
+          group(:votable_type)
+          select("'$model:' || votable_type AS tag")
+          select('SUM(recommendation_votes.weight) AS weight')
+        end
+
+        records = tag_records.raw + model_records.raw
+        records.each { |x| result[x['tag']] = x['weight'].to_f }
         result
       end
 
       def increment(vote)
+        cache_change compose_model_tag(vote.votable_type), vote.weight
         vote.votable.tags_hash.each do |tag, weight|
           cache_change tag, vote.weight * weight
         end
@@ -56,6 +67,7 @@ module Recommendation
       end
 
       def decrement(vote)
+        cache_change compose_model_tag(vote.votable_type), -1 * vote.weight
         vote.votable.tags_hash.each do |tag, weight|
           cache_change tag, -1 * vote.weight * weight
         end
@@ -63,6 +75,7 @@ module Recommendation
       end
 
       def invert(vote)
+        cache_change compose_model_tag(vote.votable_type), 2 * vote.weight
         vote.votable.tags_hash.each do |tag, weight|
           cache_change tag, 2 * vote.weight * weight
         end

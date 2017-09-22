@@ -53,11 +53,15 @@ module Recommendation
       end
 
       def tags_hash
-        recommendation_document.tags_cache.with_indifferent_access
+        recommendation_document.instance_eval do
+          remove_special_tags(tags_cache).with_indifferent_access
+        end
       end
 
       def static_tags_hash
-        recommendation_document.static_tags.with_indifferent_access
+        recommendation_document.instance_eval do
+          remove_special_tags(static_tags).with_indifferent_access
+        end
       end
 
       def dynamic_tags_hash
@@ -65,10 +69,49 @@ module Recommendation
         result.reject { |_k, v| v.zero? }.to_h.with_indifferent_access
       end
 
+      def special_tags_hash
+        recommendation_document.instance_eval do
+          h = only_special_tags(tags_cache)
+          result = {}
+          h.keys.each do |k|
+            type, name = parse_special_tag(k)
+            result[type] ||= {}
+            result[type][name] = h[k]
+          end
+          result.with_indifferent_access
+        end
+      end
+
+      def static_special_tags_hash
+        recommendation_document.instance_eval do
+          h = only_special_tags(static_tags)
+          result = {}
+          h.keys.each do |k|
+            type, name = parse_special_tag(k)
+            result[type] ||= {}
+            result[type][name] = h[k]
+          end
+          result.with_indifferent_access
+        end
+      end
+
+      def dynamic_special_tags_hash
+        special_tags_hash
+        .deep_merge(static_special_tags_hash) { |_k, v1, v2| v1 - v2 }
+        .map { |k1, v1| [k1, v1.reject { |_k2, v2| v2.zero? }.to_h] }.to_h
+        .with_indifferent_access
+      end
+
       def recalculate_tags!
         recommendation_document.recalculate_tags
         recommendation_document.save!
         tags
+      end
+
+      def model_tags
+        (special_tags_hash[:model] || []).map do |tag, weight|
+          { name: tag, weight: weight }
+        end
       end
     end
   end
