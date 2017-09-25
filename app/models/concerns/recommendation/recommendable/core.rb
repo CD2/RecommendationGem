@@ -16,7 +16,7 @@ module Recommendation
       end
 
       def recommendation_document
-        super || create_recommendation_document!
+        super || new_record? ? nil : create_recommendation_document! 
       end
 
       def recommendation_score

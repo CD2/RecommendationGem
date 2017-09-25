@@ -27,6 +27,7 @@ module Recommendation
       end
 
       def tag_with(*args)
+        return false unless recommendation_document
         args.extract_options!.each do |tag, weight|
           tag_name = ::Recommendation::Document.normalize(tag)
           recommendation_document.static_tags[tag_name] = weight
@@ -41,6 +42,7 @@ module Recommendation
       end
 
       def remove_tag(*args)
+        return false unless recommendation_document
         args.each do |tag|
           tag_name = ::Recommendation::Document.normalize(tag)
           recommendation_document.static_tags[tag_name] = 0
@@ -53,12 +55,14 @@ module Recommendation
       end
 
       def tags_hash
+        return {} unless recommendation_document
         recommendation_document.instance_eval do
           remove_special_tags(tags_cache).with_indifferent_access
         end
       end
 
       def static_tags_hash
+        return {} unless recommendation_document
         recommendation_document.instance_eval do
           remove_special_tags(static_tags).with_indifferent_access
         end
@@ -70,6 +74,7 @@ module Recommendation
       end
 
       def special_tags_hash
+        return {} unless recommendation_document
         recommendation_document.instance_eval do
           h = only_special_tags(tags_cache)
           result = {}
@@ -83,6 +88,7 @@ module Recommendation
       end
 
       def static_special_tags_hash
+        return {} unless recommendation_document
         recommendation_document.instance_eval do
           h = only_special_tags(static_tags)
           result = {}
@@ -103,8 +109,10 @@ module Recommendation
       end
 
       def recalculate_tags!
-        recommendation_document.recalculate_tags
-        recommendation_document.save!
+        if recommendation_document
+          recommendation_document.recalculate_tags
+          recommendation_document.save!
+        end
         tags
       end
 

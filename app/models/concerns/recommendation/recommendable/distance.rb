@@ -30,10 +30,12 @@ module Recommendation
       end
 
       def has_coordinates?
+        return false unless recommendation_document
         !!(recommendation_document.lat && recommendation_document.lng)
       end
 
       def coordinates
+        return nil unless recommendation_document
         [recommendation_document.lat, recommendation_document.lng]
       end
     end
