@@ -13,8 +13,8 @@ module Recommendation
 
           vote_sum = 'SUM(weight)'
           max_vote_sum = "MAX(abs(#{vote_sum})) OVER ()"
-          max_vote_sum = Q::Metric.new(max_vote_sum).at_least(1)
-          score = Q::Metric.new("#{vote_sum} / #{max_vote_sum}").at_least(min_value)
+          max_vote_sum = ::Recommendation::Q::Metric.new(max_vote_sum).at_least(1)
+          score = ::Recommendation::Q::Metric.new("#{vote_sum} / #{max_vote_sum}").at_least(min_value)
 
           model_docs = ::Recommendation::Document.where(recommendable_type: qlass)
 

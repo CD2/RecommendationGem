@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Recommendation
-  class Vote < ::Recommendation::ApplicationRecord
+  class Vote < ::Recommendation::RecommendationRecord
     belongs_to :voter, polymorphic: true, inverse_of: :votes_as_voter
     belongs_to :votable, polymorphic: true, inverse_of: :votes_as_votable
 

@@ -10,7 +10,7 @@ module Recommendation
           min_value = 0.5
 
           age = "GREATEST(EXTRACT(epoch FROM '#{::Time.now}' - created_at), 2)"
-          score = Q::Metric.new(age).curve_decline(20.years.seconds).at_least(min_value)
+          score = ::Recommendation::Q::Metric.new(age).curve_decline(20.years.seconds).at_least(min_value)
 
           str = relation
                 .select(:id)
@@ -18,7 +18,7 @@ module Recommendation
                 .select('created_at AS value')
                 .to_sql
 
-          Q::SQLString.new(str)
+          ::Recommendation::Q::SQLString.new(str)
         end
       end
     end

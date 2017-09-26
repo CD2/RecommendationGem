@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Recommendation
-  class Document < ::Recommendation::ApplicationRecord
+  class Document < ::Recommendation::RecommendationRecord
     include ::Recommendation::Cache
     include ::Recommendation::Metrics::Composite
     include ::Recommendation::Metrics::Distance

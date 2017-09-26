@@ -37,8 +37,8 @@ module Recommendation
             select("#{tag_value} AS tag_value")
           end
 
-          max_tag_value = Q::Metric.new('MAX(tag_value) OVER ()').at_least(1)
-          score = Q::Metric.new("tag_value / #{max_tag_value}").at_least(min_value)
+          max_tag_value = ::Recommendation::Q::Metric.new('MAX(tag_value) OVER ()').at_least(1)
+          score = ::Recommendation::Q::Metric.new("tag_value / #{max_tag_value}").at_least(min_value)
 
           query_chain do
             from("(#{tag_values.as_sql}) AS tag_values")

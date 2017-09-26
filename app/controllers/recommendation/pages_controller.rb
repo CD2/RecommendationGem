@@ -21,7 +21,7 @@ module Recommendation
       @records = @records.tagged_with(*@tags, allow_negative: true) if @tags.present?
 
       @records.load
-      @record_size = Q.simple_count(@records.except(:offset, :limit))
+      @record_size = ::Recommendation::Q.simple_count(@records.except(:offset, :limit))
     end
 
     def show

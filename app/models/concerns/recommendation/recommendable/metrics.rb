@@ -45,7 +45,7 @@ module Recommendation
           result = all
 
           if include_score
-            result = result.select(Q.quote(table_name, :*)) if result.select_values.empty?
+            result = result.select(::Recommendation::Q.quote(table_name, :*)) if result.select_values.empty?
             result = result.select("#{metric}_metric.score AS #{metric}_score")
             if metric.to_s == 'composite'
               weights.each { |k, _v| result = result.select("#{k}_score") }
@@ -53,7 +53,7 @@ module Recommendation
           end
 
           if include_value
-            result = result.select(Q.quote(table_name, :*)) if result.select_values.empty?
+            result = result.select(::Recommendation::Q.quote(table_name, :*)) if result.select_values.empty?
             if metric.to_s == 'composite'
               weights.each { |k, _v| result = result.select("#{k}_value") }
             else
