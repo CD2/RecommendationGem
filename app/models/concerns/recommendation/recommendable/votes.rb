@@ -64,7 +64,7 @@ module Recommendation
       end
 
       def my_vote_weight(votable)
-        my_vote&.weight || 0
+        my_vote(votable)&.weight || 0
       end
 
       def voted_up?(votable)
