@@ -68,11 +68,11 @@ module Recommendation
       end
 
       def voted_up?(votable)
-        votable.my_vote_weight == 1
+        my_vote_weight(votable) == 1
       end
 
       def voted_down?(votable)
-        votable.my_vote_weight == -1
+        my_vote_weight(votable) == -1
       end
     end
   end
