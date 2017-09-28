@@ -58,6 +58,22 @@ module Recommendation
         association(:recommendation_document).reset
         true
       end
+
+      def my_vote(votable)
+        votes_as_voter.find_by(votable: votable)
+      end
+
+      def my_vote_weight(votable)
+        my_vote&.weight || 0
+      end
+
+      def voted_up?(votable)
+        votable.my_vote_weight == 1
+      end
+
+      def voted_down?(votable)
+        votable.my_vote_weight == -1
+      end
     end
   end
 end
