@@ -69,12 +69,16 @@ module Recommendation
       "$#{special}:#{tag}"
     end
 
-    def self.remove_special_tags h
-      h.reject { |k, _v| parse_special_tag(k) }.to_h
+    def self.remove_special_tags arg
+      return arg.reject { |k, _v| parse_special_tag(k) }.to_h if arg.is_a? Hash
+      return arg.reject { |k| parse_special_tag(k) } if arg.is_a? Array
+      raise ArgumentError
     end
 
-    def self.only_special_tags h
-      h.select { |k, _v| parse_special_tag(k) }.to_h
+    def self.only_special_tags arg
+      return arg.select { |k, _v| parse_special_tag(k) }.to_h if arg.is_a? Hash
+      return arg.select { |k| parse_special_tag(k) } if arg.is_a? Array
+      raise ArgumentError
     end
 
     def self.method_missing name, *args, &block

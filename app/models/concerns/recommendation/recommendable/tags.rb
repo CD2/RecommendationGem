@@ -19,10 +19,19 @@ module Recommendation
         end
 
         def self.all_tags
-          ::Recommendation::Document.where(
+          tags = ::Recommendation::Document.where(
             recommendable_type: all.klass.name,
             recommendable_id: all.select(:id)
           ).all_tags
+          ::Recommendation::Document.remove_special_tags(tags)
+        end
+
+        def self.all_special_tags
+          tags = ::Recommendation::Document.where(
+            recommendable_type: all.klass.name,
+            recommendable_id: all.select(:id)
+          ).all_tags
+          ::Recommendation::Document.only_special_tags(tags)
         end
       end
 

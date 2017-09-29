@@ -8,10 +8,6 @@ require_dependency "#{::Recommendation::Engine.root}/lib/recommendation/q/simple
 require_dependency "#{::Recommendation::Engine.root}/lib/recommendation/q/table_mock.rb"
 
 module Recommendation
-  def self.all_tags
-    ::Recommendation::Document.all_tags
-  end
-
   class RecommendationRecord < ::Recommendation::Q::Core
     self.abstract_class = true
 
