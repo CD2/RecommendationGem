@@ -8,12 +8,13 @@ module Recommendation
       included do
         def self.tagged_with(*tag_names)
           options = tag_names.extract_options!.to_options
-          options.assert_valid_keys(:allow_negative)
+          options.assert_valid_keys(:allow_negative, :require_all)
           allow_negative = options.fetch(:allow_negative, false)
+          require_all = options.fetch(:require_all, true)
 
           docs = ::Recommendation::Document
                  .where(recommendable_type: name)
-                 .tagged_with(tag_names, allow_negative)
+                 .tagged_with(tag_names, allow_negative, !require_all)
                  .select(:recommendable_id)
           where(id: docs)
         end
