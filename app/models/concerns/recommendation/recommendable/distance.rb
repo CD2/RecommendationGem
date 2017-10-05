@@ -18,7 +18,15 @@ module Recommendation
         end
       end
 
-      def distance_to(subject)
+      def distance_to(subject, opts = {})
+        options = opts.to_options
+        options.assert_valid_keys :allow_cache_use
+        allow_cache_use = options.fetch(:allow_cache_use, false)
+
+        if allow_cache_use && has_attribute?('distance_value')
+          return distance_value
+        end
+
         return nil unless has_coordinates? && subject.has_coordinates?
         points = [
           "point(#{coordinates.join(', ')})",
