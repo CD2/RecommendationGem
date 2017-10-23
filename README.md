@@ -11,7 +11,6 @@ gem 'recommendation', git: 'https://github.com/CD2/recommendation-gem'
 And then execute:
 ```bash
 $ bundle
-$ rake recommendation:install:migrations
 $ rake db:migrate
 ```
 
