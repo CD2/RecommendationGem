@@ -12,6 +12,10 @@ module Recommendation
         type = columns_hash[field.to_s]&.type == :jsonb ? 'jsonb' : 'json'
         joins("LEFT JOIN #{type}_each_text(#{field}) AS #{name} ON #{condition}")
       end
+
+      def self.jsonify
+        sql_calculate "SELECT array_to_json(array_agg(json)) FROM (#{order(:id).as_sql}) AS json"
+      end
     end
   end
 end

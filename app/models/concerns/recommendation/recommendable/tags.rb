@@ -34,6 +34,19 @@ module Recommendation
           ).all_tags
           ::Recommendation::Document.only_special_tags(tags)
         end
+
+        def self.ordered_tags
+          tags = ::Recommendation::Document
+            .where(
+              recommendable_type: all.klass.name,
+              recommendable_id: all.select(:id)
+            )
+            .expand_json(:tags_cache)
+            .group('json.key')
+            .order('COUNT(json.value) DESC')
+            .pluck('json.key')
+          ::Recommendation::Document.remove_special_tags(tags)
+        end
       end
 
       def tag_with(*args)

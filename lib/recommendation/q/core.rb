@@ -35,7 +35,7 @@ module Recommendation
       end
 
       def self.sql_calculate(command)
-        sql_execute(command).first&.values&.first
+        connection.execute(command).values.first.first
       end
 
       def self.raw
