@@ -47,6 +47,8 @@ module Recommendation
             .pluck('json.key')
           ::Recommendation::Document.remove_special_tags(tags)
         end
+
+        after_save :tag_with_unsaved_tags
       end
 
       def tag_with(*args)
@@ -75,6 +77,18 @@ module Recommendation
 
       def tags
         tags_hash.map { |tag, weight| { name: tag, weight: weight } }
+      end
+
+      def tags= *tags
+        tags.replace(Array.wrap(tags[0])) if tags.one?
+        tags.map!(&:to_sym)
+        @unsaved_static_tags_hash = tags.map { |x| [x, 1] }.to_h
+      end
+
+      def tag_with_unsaved_tags
+        return unless @unsaved_static_tags_hash
+        recommendation_document.update!(static_tags: @unsaved_static_tags_hash)
+        @unsaved_static_tags_hash = nil
       end
 
       def tags_hash
