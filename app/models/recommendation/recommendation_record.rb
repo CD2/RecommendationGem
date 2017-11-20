@@ -14,7 +14,7 @@ module Recommendation
     delegate :normalize, to: :class
 
     def self.normalize(str)
-      str.to_s.parameterize.tr('_-', ' ')
+      str.to_s.parameterize.tr('_-', ' ').downcase
     end
   end
 end
