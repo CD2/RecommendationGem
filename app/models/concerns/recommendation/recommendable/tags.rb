@@ -79,16 +79,15 @@ module Recommendation
         tags_hash.map { |tag, weight| { name: tag, weight: weight } }
       end
 
-      def tags= *tags
-        tags.replace(Array.wrap(tags[0])) if tags.one?
-        tags.map!(&:to_sym)
-        @unsaved_static_tags_hash = tags.map { |x| [x, 1] }.to_h
+      def tags= tags
+        @unsaved_tags = tags
       end
 
       def tag_with_unsaved_tags
-        return unless @unsaved_static_tags_hash
-        recommendation_document.update!(static_tags: @unsaved_static_tags_hash)
-        @unsaved_static_tags_hash = nil
+        return unless @unsaved_tags
+        recommendation_document.static_tags = {}
+        tag_with *@unsaved_tags
+        @unsaved_tags = nil
       end
 
       def tags_hash
