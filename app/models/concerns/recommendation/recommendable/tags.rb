@@ -42,6 +42,7 @@ module Recommendation
               recommendable_id: all.select(:id)
             )
             .expand_json(:tags_cache)
+            .where('json.key IS NOT NULL')
             .group('json.key')
             .order('COUNT(json.value) DESC')
             .pluck('json.key')
