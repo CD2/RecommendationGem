@@ -46,6 +46,12 @@ module Recommendation
           votes = votable.votes_as_votable.where voter_type: all.klass.name
           where(id: votes.select(:voter_id))
         end
+
+        def self.top
+          scores = left_joins(:votes_as_votable).group(:id).select(:id, 'coalesce(SUM(recommendation_votes.weight), 0) AS value')
+          joins(%(JOIN (#{scores.to_sql}) AS recommendation_voting_scores ON recommendation_voting_scores.id = "#{table_name}".id))
+          .order('recommendation_voting_scores.value DESC')
+        end
       end
 
       def vote_up(votable)
